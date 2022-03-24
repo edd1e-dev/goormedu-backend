@@ -1,4 +1,4 @@
-var EntitySchema = require("typeorm").EntitySchema;
+import { EntitySchema } from "typeorm";
 
 const User = new EntitySchema({
   name: "User", // Will use table name `User` as default behaviour.
@@ -9,10 +9,10 @@ const User = new EntitySchema({
       type: "int",
       generated: true,
     },
-    name: {
+    email: {
       type: "text",
     },
-    email: {
+    sub: {
       type: "text",
     },
   },

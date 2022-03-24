@@ -1,10 +1,11 @@
 import User from "../entity/user.entity";
+import AppDataSource from "../db";
 
 export const findUser = async (req, res) => {
   try {
-    const userRepository = await dataSource.getRepository(User);
+    const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOneBy({
-      id: req.params?.id,
+      sub: req.params?.id ?? "",
     });
     return res.send({ user });
   } catch {

@@ -1,5 +1,6 @@
 import express from "express";
 import passport from "passport";
+import { login } from "../controller/authController";
 
 const authRouter = express.Router();
 
@@ -8,9 +9,9 @@ authRouter.get(
   "/google/oauth",
   passport.authenticate("google", {
     failureRedirect: "/auth/fail",
-    successRedirect: "/",
     session: false,
-  })
+  }),
+  login
 );
 
 authRouter.get("/fail", (_, res) => res.send({ error: "login fail" }));
