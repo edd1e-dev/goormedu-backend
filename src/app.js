@@ -20,7 +20,8 @@ app.use("/", globalRouter); // 모든 요청을 globalRouter로
 
 app.use((req, res, next) => {
     res.status(404).json({
-        message: 'Ohh you are lost, read the API documentation to find your way back home :)'
+        ok: false,
+        error: '요청에 실패하였습니다. 사유: 잘못된 API 호출 방식입니다.'
     })
 })
 
