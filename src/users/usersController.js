@@ -40,30 +40,50 @@ export const deleteUser = async (req, res) => {
       .execute();
     res.status(200).send({ message: 'Success' });
   } catch (error) {
-    res.status(409).send({ message: `Fail ${error}` });
+    res.status(400).send({ message: `Fail ${error}` });
   }
 }
 
 /**
  * 어떠한 값을 기준으로 비교 후 해당 사용자의 권한을 변경
  * 기본적으로 Student이며 Body 값의 role이 지정되어 있을 경우에만 해당 권한으로 변경
+ * Student | Teacher | Admin
  * /users/:id/role/update
  * @param {*} req 
  * @param {*} res 
  */
-export const changeUserRole = async (req, res) => {
-  console.log(req.body)
-  /*
+export const updateUserRole = async (req, res) => {
+  let roleType = "";
+  if (isEmptyObj(req.body) == true || req.body.role === undefined) {
+    roleType = "Teacher";
+  } else {
+    if (req.body.role === "Student" 
+      || req.body.role === "Teacher"
+      || req.body.role === "Admin") {
+        roleType = req.body.role;
+    } else {
+      roleType = "Student";
+    }
+  }
+  
   try {
     await AppDataSource
       .createQueryBuilder()
       .update(User)
-      .set({ firstName: "Timber", lastName: "Saw" })
-      .where("id = :id", { id: 1 })
+      .set({ role: roleType })
+      .where("id = :id", { id: req.params?.id })
       .execute();
     res.status(200).send({ message: 'Success' });
   } catch (error) {
-    res.status(409).send({ message: `Fail ${error}` });
+    res.status(400).send({ message: `Fail ${error}` });
   }
-  */
+}
+
+function isEmptyObj(obj)  {
+  if(obj.constructor === Object 
+    && Object.keys(obj).length === 0)  {
+    return true;
+  }
+  
+  return false;
 }
