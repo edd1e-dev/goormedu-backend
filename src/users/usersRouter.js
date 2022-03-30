@@ -1,6 +1,6 @@
 import express from "express";
 import passport from "passport";
-import { findUser, getUserSelfInfo, deleteUserId, deleteUser } from "./usersController";
+import { findUser, getUserSelfInfo, deleteUser, joinUser, changeUserRole } from "./usersController";
 
 const usersRouter = express.Router();
 
@@ -22,6 +22,10 @@ usersRouter.get(
   "/:id/delete", deleteUser
 );
 
-// usersRouter.get("/:id", findUser);
+usersRouter.get(
+  "/:id/role/update", changeUserRole
+);
+
+usersRouter.get("/:id", findUser);
 
 export default usersRouter;
