@@ -2,7 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import { urlencoded } from "express";
 import passport from "passport";
-import globalRouter from "./router/globalRouter";
+import globalRouter from "./globalRouter";
 import GoogleStrategy from "./middleware/GoogleStrategy";
 import JwtStrategy from "./middleware/JwtStrategy";
 

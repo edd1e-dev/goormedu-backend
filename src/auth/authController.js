@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../entity/user.entity";
+import User from "../users/user.entity";
 import AppDataSource from "../db";
 
 export const login = async (req, res) => {

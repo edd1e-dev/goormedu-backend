@@ -1,4 +1,4 @@
-import User from "../entity/user.entity";
+import User from "./user.entity";
 import AppDataSource from "../db";
 
 export const findUser = async (req, res) => {

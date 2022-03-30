@@ -1,9 +1,9 @@
 import { DataSource } from "typeorm";
-import User from "./entity/user.entity";
-import Chapter from "./entity/chapter.entity";
-import Lecture from "./entity/lecture.entity";
-import Category from "./entity/category.entity";
-import UserClassroom from "./entity/userClassroom.entity";
+import User from "./users/user.entity";
+import Chapter from "./chapter/chapter.entity";
+import Lecture from "./lecture/lecture.entity";
+import Category from "./category/category.entity";
+import UserClassroom from "./userClassroom/userClassroom.entity";
 
 const AppDataSource = new DataSource({
   type: "mysql",

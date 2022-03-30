@@ -1,6 +1,6 @@
 import express from "express";
 import passport from "passport";
-import { findUser, getUserSelfInfo, deleteUserId, deleteUser } from "../controller/usersController";
+import { findUser, getUserSelfInfo, deleteUserId, deleteUser } from "./usersController";
 
 const usersRouter = express.Router();
 
