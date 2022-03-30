@@ -11,6 +11,7 @@ const app = express();
 app.use(cookieParser()); // 쿠키를 받기 위해 필요
 app.use(express.json()); // JSON형식으로 요청을 얻기 위해 필요
 app.use(urlencoded({ extended: true })); //body데이터를 추출하기 쉽게 변화
+app.disable('x-powered-by'); // 헤더의 x-powered-by: Express 숨기기
 
 passport.use(GoogleStrategy);
 passport.use(JwtStrategy);

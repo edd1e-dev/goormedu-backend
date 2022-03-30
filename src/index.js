@@ -8,4 +8,4 @@ AppDataSource.initialize()
       console.log(`✅ Listening on: 'http://localhost:${process.env.PORT}`);
     })
   )
-  .catch(() => console.log("❌ DB connection fail"));
+  .catch((e ) => console.log(`❌ DB connection fail: ${e}`));

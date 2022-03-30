@@ -1,20 +1,40 @@
 import { EntitySchema } from "typeorm";
 
 const User = new EntitySchema({
-  name: "User", // Will use table name `User` as default behaviour.
-  tableName: "User", // Optional: Provide `tableName` property to override the default behaviour for table name.
+  name: "User",
+  tableName: "User", 
   columns: {
     id: {
       primary: true,
       type: "int",
       generated: true,
     },
+
     email: {
       type: "text",
     },
+
+    username: {
+      type: "text",
+    },
+
+    // passport-google id
     sub: {
       type: "text",
     },
+
+    // Student | Teacher | Admin
+    role: {
+      type: "text",
+    },
+
+    createdAt: {
+      type: "date"
+    },
+
+    updatedAt: {
+      type: "date"
+    }
   },
 });
 

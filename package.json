@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/runtime": "^7.17.8",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
@@ -21,12 +22,14 @@
     "passport-google-oauth2": "^0.2.0",
     "passport-jwt": "^4.0.0",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.3.3"
+    "typeorm": "^0.3.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.17.6",
     "@babel/core": "^7.17.8",
     "@babel/node": "^7.16.8",
+    "@babel/plugin-proposal-decorators": "^7.17.8",
+    "@babel/plugin-transform-runtime": "^7.17.0",
     "@babel/preset-env": "^7.16.11",
     "eslint": "^8.11.0",
     "eslint-config-airbnb-base": "^15.0.0",
