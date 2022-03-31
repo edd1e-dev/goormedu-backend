@@ -10,19 +10,12 @@ const app = express();
 
 app.use(cookieParser()); // 쿠키를 받기 위해 필요
 app.use(express.json()); // JSON형식으로 요청을 얻기 위해 필요
-app.use(urlencoded({ extended: true })); //body데이터를 추출하기 쉽게 변화
+app.use(urlencoded({ extended: true })); //body 데이터를 추출하기 쉽게 변화
 app.disable('x-powered-by'); // 헤더의 x-powered-by: Express 숨기기
 
 passport.use(GoogleStrategy);
 passport.use(JwtStrategy);
 
 app.use("/", globalRouter); // 모든 요청을 globalRouter로
-
-app.use((req, res, next) => {
-    res.status(404).json({
-        ok: false,
-        error: '요청에 실패하였습니다. 사유: 잘못된 API 호출 방식입니다.'
-    })
-})
 
 export default app;

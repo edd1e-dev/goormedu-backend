@@ -1,31 +1,31 @@
 import express from "express";
 import passport from "passport";
-import { findUser, getUserSelfInfo, deleteUser, updateUserRole } from "./usersController";
+import JwtStrategy from "passport-jwt/lib/strategy";
+import { findUser, getUserProfile, deleteUser, updateUserRole } from "./usersController";
 
 const usersRouter = express.Router();
 
 usersRouter.get(
-  "/profile",
+  "/profile", 
   passport.authenticate("jwt", { session: false }),
-  (req, res) => {
-    return res.send({ user: req.user });
-  }
+  getUserProfile
 );
 
 usersRouter.get(
-  "/self", (req, res) => {
-      return res.send("self");
-    }
-);
-
-usersRouter.get(
-  "/:id/delete", deleteUser
+  "/:id/delete",
+  passport.authenticate("jwt", { session: false }), 
+  deleteUser
 );
 
 usersRouter.post(
-  "/:id/role/update", updateUserRole
+  "/:id/role/update", 
+  passport.authenticate("jwt", { session: false }), 
+  updateUserRole
 );
 
-usersRouter.get("/:id", findUser);
+usersRouter.get("/:id", 
+  passport.authenticate("jwt", { session: false }), 
+  findUser
+);
 
 export default usersRouter;
