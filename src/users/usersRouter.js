@@ -1,31 +1,30 @@
 import express from "express";
 import passport from "passport";
-import JwtStrategy from "passport-jwt/lib/strategy";
-import { findUser, getUserProfile, deleteUser, updateUserRole } from "./usersController";
+import {  
+  verifyUserRole,
+  verifyAuthById, 
+  findUserById, 
+  deleteUserById, 
+  getSelfUserProfile, 
+  updateUserRole,
+} from "./usersController";
+import { UserRole } from "./UserRole";
 
 const usersRouter = express.Router();
 
-usersRouter.get(
-  "/profile", 
-  passport.authenticate("jwt", { session: false }),
-  getUserProfile
+usersRouter.get("/verify", (_, res) => 
+  res.send({ ok: false, error: '사용자 검증에 실패하였습니다.' })
 );
 
-usersRouter.get(
-  "/:id/delete",
-  passport.authenticate("jwt", { session: false }), 
-  deleteUser
-);
+usersRouter.use(passport.authenticate('jwt', { session: false, failureRedirect: "/users/verify"}), verifyAuthById);
 
-usersRouter.post(
-  "/:id/role/update", 
-  passport.authenticate("jwt", { session: false }), 
-  updateUserRole
-);
+/* 권한 검증 미들웨어 사용
+   Admin하고 Student만 다음 매개변수의 비동기 함수 실행 가능
+   usersRouter.get("/profile", verifyUserRole(new Set([UserRole.Admin, UserRole.Student])), getSelfUserProfile); */
 
-usersRouter.get("/:id", 
-  passport.authenticate("jwt", { session: false }), 
-  findUser
-);
+usersRouter.get("/profile", getSelfUserProfile);
+usersRouter.get("/:id/delete", deleteUserById);
+usersRouter.post("/:id/role/update", verifyUserRole(new Set([UserRole.Admin])), updateUserRole);
+usersRouter.get("/:id", findUserById);
 
 export default usersRouter;

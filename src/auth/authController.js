@@ -9,7 +9,7 @@ export const login = async (req, res) => {
     sub,
     email
   });
-
+  
   if (!user) {
 		let newUser = userRepository.create({ 
       email,
@@ -22,7 +22,14 @@ export const login = async (req, res) => {
 		await userRepository.save(newUser); // await
 	}
 
-  const token = jwt.sign(req.user, process.env.JWT_PRIVATEKEY);
+  /*
+  jwtPayload {
+    id,
+    role
+  }
+  */
+  const jwtPayload = { id: user.id, role: user.role };
+  const token = jwt.sign(jwtPayload, process.env.JWT_PRIVATEKEY);
 	res.cookie('jwt', token, { httpOnly: true }); // 나중에 https로 전환 시 수정 필요할 듯
   return res.redirect("/");
 };

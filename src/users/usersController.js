@@ -1,91 +1,99 @@
 import User from "./user.entity";
 import AppDataSource from "../db";
 import { SimpleConsoleLogger } from "typeorm";
-
+import { UserRole } from "./UserRole";
 
 /**
- * JWT sub 값을 기준으로 비교 후 해당 사용자의 정보를 조회
+ * 사용자 특정 Role 확인해서 차단하는 미들웨어
+ * 
+ * @param {} req 
+ * @param {*} res 
+ * @param {*} next 
+ * @returns 
+ */
+ export function verifyUserRole(accessableRole) {
+  return async (req, res, next) => {
+    if(accessableRole.has(req.user.role)) {
+      next();
+    } else {
+      res.send({ ok: false, error: '해당 명령을 실행할 권한이 없습니다.' })
+    }
+  }
+}
+
+/**
+ * 로그인된 사용자인지 검증
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ * @returns 
+ */
+export const verifyAuthById = async (req, res, next) => {
+  try {
+    if (req.user) {
+      const userId = parseInt(req.user?.id ?? "0");
+      const userRepository = AppDataSource.getRepository(User);
+      const user = await userRepository.findOneBy({ id: userId });
+      next();
+    } else {
+      res.send({ ok: false, error: '사용자 검증에 실패하였습니다.' })
+    }
+  } catch {
+    return res.send({ ok: false, error: "예기치 못한 에러가 발생하였습니다." });
+  } 
+}
+
+/**
+ * 해당 사용자의 정보를 조회
  * 
  * /users/:id
  * @param {*} req 
  * @param {*} res 
  * @returns 
  */
-export const findUser = async (req, res) => {
-  let responseData = {};
-
+export const findUserById = async (req, res) => {
   try {
-    const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOneBy({
-      sub: req.user.sub ?? "",
-    });
+    const id = parseInt(req.params?.id ?? "0")
+		const user = await AppDataSource.getRepository(User).findOneBy({ id });
 
-    if (user === null || isEmptyObj(user)) {
-      responseData.ok = false;
-      responseData.error = '요청에 실패하였습니다. 사유: 로그인된 사용자만 접근할 수 있습니다.';
+    if (user) {
+      const {sub, ...result } = user; 
+      return res.send({ ok: true, result }); 
     } else {
-      const userRepository = AppDataSource.getRepository(User);
-      const user = await userRepository.findOneBy({
-        id: req.params?.id ?? "",
-      });
-
-      if (user === null || isEmptyObj(user)) {
-        responseData.ok = false;
-        responseData.error = '요청에 실패하였습니다. 사유: 해당하는 레코드를 찾을 수 없습니다.';
-      } else {
-        const {sub, ...userPublicData} = user;
-        responseData = { 
-          ok: true,
-          result: userPublicData
-        };
-      }
+      return res.send({ ok:false, error: "사용자 정보를 조회하지 못했습니다." });
     }
-  } catch (error) {
-    responseData.ok = false;
-    responseData.error = `요청에 실패하였습니다. 사유: ${error.message}`;
-  } finally {
-    return res.status(200).send(responseData);
+  } catch {
+    return res.send({ ok: false, error: "예기치 못한 에러가 발생하였습니다." });
   }
 };
 
 /**
- * JWT sub 값을 기준으로 비교 후 사용자 본인의 정보를 조회
+ * 사용자 본인의 정보를 조회
  * 
  * /users/profile
  * @param {*} req 
  * @param {*} res 
  * @returns 
  */
-
- export const getUserProfile = async (req, res) => {
-  let responseData = {};
-
+export const getSelfUserProfile = async (req, res, next) => {
   try {
-    const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOneBy({
-      sub: req.user.sub ?? "",
-    });
+    const id = parseInt(req.user?.id ?? "0")
+		const user = await AppDataSource.getRepository(User).findOneBy({ id });
 
-    if (user === null || isEmptyObj(user)) {
-      responseData.ok = false;
-      responseData.error = '요청에 실패하였습니다. 사유: 해당하는 레코드를 찾을 수 없습니다.';
+    if (user) {
+      const {sub, ...result } = user; 
+      return res.send({ ok: true, result }); 
     } else {
-      const {sub, ...userPublicData} = user;
-      responseData = { 
-        ok: true,
-        result: userPublicData
-      };
+      return res.send({ ok:false, error: "사용자 정보를 조회하지 못했습니다." });
     }
-  } catch (error) {
-    responseData.ok = false;
-    responseData.error = `요청에 실패하였습니다. 사유: ${error.message}`;
-  } finally {
-    return res.status(200).send(responseData);
+  } catch {
+    return res.send({ ok: false, error: "예기치 못한 에러가 발생하였습니다." });
   }
-};
+}
 
 /**
- * JWT sub 값을 기준으로 비교 후 해당 사용자의 정보를 삭제
+ * 해당 사용자의 정보를 삭제
  * 관리자인 경우 모든 삭제 가능
  * 일반 사용자인 경우 본인 계정만 삭제 가능
  * 
@@ -93,76 +101,22 @@ export const findUser = async (req, res) => {
  * @param {*} req 
  * @param {*} res 
  */
-export const deleteUser = async (req, res) => {
-  let responseData = {};
-
+ export const deleteUserById = async (req, res) => {
   try {
-    const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOneBy({
-      sub: req.user.sub ?? "",
-    });
-
-    if (user === null || isEmptyObj(user)) {
-      responseData.ok = false;
-      responseData.error = '요청에 실패하였습니다. 사유: 로그인된 사용자만 접근할 수 있습니다.';
-    } else {
-      // 관리자인 경우
-      if (user.role === "Admin") {
-        let transaction = await AppDataSource
-        .createQueryBuilder()
-        .delete()
-        .from(User)
-        .where("id = :id", { id: req.params?.id })
-        .execute()
-
-        if (transaction.affected == 0) {
-          responseData.ok = false;
-          responseData.error = '요청에 실패하였습니다. 사유: 해당하는 레코드를 찾을 수 없습니다.';
-        } else {
-          responseData.ok = true;
-          responseData.results = { 
-            id: req.params?.id
-          };
-        }
-      // 관리자가 아닌 경우
-      } else {
-        console.log(user.id)
-        console.log(req.params?.id)
-        if (user.id == req.params?.id)
-        {
-          let transaction = await AppDataSource
-          .createQueryBuilder()
-          .delete()
-          .from(User)
-          .where("id = :id", { id: user.id })
-          .execute()
-
-          if (transaction.affected == 0) {
-            responseData.ok = false;
-            responseData.error = '요청에 실패하였습니다. 사유: 해당하는 레코드를 찾을 수 없습니다.';
-          } else {
-            responseData.ok = true;
-            responseData.results = { 
-              id: req.params?.id
-            };
-          }
-        } else {
-          responseData.ok = false;
-          responseData.error = '요청에 실패하였습니다. 사유: 사용자 본인만 삭제할 수 있습니다.';
-        }
-      }
-    }
-  } catch (error) {
-    console.log(`error: ${error}`);
-    responseData.ok = false;
-    responseData.error = `요청에 실패하였습니다. 사유: ${error.message}`;
-  } finally {
-    return res.status(200).send(responseData);
-  }
+		const ownProfile = req.user; // { sub, role }
+		const id = parseInt(req.params?.id ?? "0");
+		if (ownProfile.role !== UserRole.Admin && ownProfile.id !== id) { 
+			return res.send({ ok: false, error: "해당 명령을 실행할 권한이 없습니다." });
+		}
+		await AppDataSource.getRepository(User).delete({ id }); 
+		return res.send({ ok: true, result: { id }});
+  } catch (e) {
+		return res.send({ ok: false, error: "예기치 못한 에러가 발생하였습니다." + e});
+	}
 }
 
 /**
- * JWT sub 값을 기준으로 비교 후 해당 사용자의 권한을 변경
+ * 해당 사용자의 권한을 변경
  * 기본적으로 Student이며 Body 값의 role이 지정되어 있을 경우에만 해당 권한으로 변경
  * 관리자만 실행 가능
  * Student | Teacher | Admin
@@ -171,66 +125,26 @@ export const deleteUser = async (req, res) => {
  * @param {*} req 
  * @param {*} res 
  */
-export const updateUserRole = async (req, res) => {
-  let roleType = "";
-  let responseData = {};
-  
+ export const updateUserRole = async (req, res) => {
   try {
+		const newRole = req.body.role;
+		if (newRole !== UserRole.Student
+       && newRole !== UserRole.Teacher
+       && newRole !== UserRole.Admin) {
+      return res.send({ ok: false, error: "존재하지 않는 권한입니다." });
+		}
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOneBy({
-      sub: req.user.sub ?? "",
+      id: req.user.id,
     });
-
-    if (user === null || isEmptyObj(user)) {
-      responseData.ok = false;
-      responseData.error = '요청에 실패하였습니다. 사유: 로그인된 사용자만 접근할 수 있습니다.';
-    } else {
-      // 관리자인 경우
-      if (user.role === "Admin") {
-        if (isEmptyObj(req.body) == true || req.body.role === undefined) {
-          roleType = "Teacher";
-        } else {
-          if (req.body.role === "Student" 
-            || req.body.role === "Teacher"
-            || req.body.role === "Admin") {
-              roleType = req.body.role;
-          } else {
-            roleType = "Student";
-          }
-        }
-
-        let transaction = await AppDataSource
-          .createQueryBuilder()
-          .update(User)
-          .set({ role: roleType })
-          .where("id = :id", { id: req.params?.id })
-          .execute();
-
-        if (transaction.affected == 0) {
-          responseData.ok = false;
-          responseData.error = '요청에 실패하였습니다. 사유: 해당하는 레코드를 찾을 수 없습니다.';
-        } else {
-          responseData.ok = true;
-          responseData.results = { 
-            id: req.params?.id,
-            role: roleType
-          };
-        }
-      }
-    }
-  } catch (error) {
-    responseData.ok = false;
-    responseData.error = `요청에 실패하였습니다. 사유: ${error.message}`;
-  } finally {
-    return res.status(200).send(responseData);
+		if (user) {
+			user.role = newRole;
+			const { sub, ...result } = await userRepository.save(user);
+			return res.send({ ok: true, result });
+		} else {
+			return res.send({ ok:false, error: "해당 사용자를 조회하지 못했습니다." });
+		}
+  } catch {
+		return res.send({ ok: false, error: "예기치 못한 에러가 발생했습니다." });
   }
-}
-
-function isEmptyObj(obj) {
-  if(obj.constructor === Object 
-    && Object.keys(obj).length === 0)  {
-    return true;
-  }
-  
-  return false;
 }
