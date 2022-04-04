@@ -9,4 +9,15 @@ const JwtStrategy = new Strategy(option, function (payload, done) {
   done(null, payload);
 });
 
+export function handleAuthSuccess(req, res, next) {
+  next();
+  // return res.send({ success: true, message: 'Logged in' })
+}
+
+export function handleAuthFailure(err, req, res, next) {
+  // return res.status(401).send({ success: false, message: err })
+  return res.redirect('/auth/google');
+}
+
+
 export default JwtStrategy;

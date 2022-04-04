@@ -17,11 +17,12 @@ export const findUserById = async (req, res) => {
 		const user = await AppDataSource.getRepository(User).findOneBy({ id });
 
     if (user) {
-      const {sub, ...result } = user; 
+      const {sub, email, createdAt, updatedAt, ...result } = user; 
       return res.send({ ok: true, result }); 
     } else {
       return res.send({ ok: false, error: "사용자 정보를 조회하지 못했습니다." });
     }
+
   } catch {
     return res.send({ ok: false, error: "예기치 못한 에러가 발생하였습니다." });
   }
@@ -44,8 +45,9 @@ export const getSelfUserProfile = async (req, res, next) => {
       const {sub, ...result } = user; 
       return res.send({ ok: true, result }); 
     } else {
-      return res.send({ ok:false, error: "사용자 정보를 조회하지 못했습니다." });
+      return res.send({ ok: false, error: "사용자 정보를 조회하지 못했습니다." });
     }
+
   } catch {
     return res.send({ ok: false, error: "예기치 못한 에러가 발생하였습니다." });
   }
@@ -62,15 +64,18 @@ export const getSelfUserProfile = async (req, res, next) => {
  */
  export const deleteUserById = async (req, res) => {
   try {
-		const ownProfile = req.user; // { sub, role }
+		const ownProfile = req.user; 
 		const id = parseInt(req.params?.id ?? "0");
+
 		if (ownProfile.role !== UserRole.Admin && ownProfile.id !== id) { 
 			return res.send({ ok: false, error: "해당 명령을 실행할 권한이 없습니다." });
 		}
+
 		await AppDataSource.getRepository(User).delete({ id }); 
 		return res.send({ ok: true, result: { id }});
-  } catch (e) {
-		return res.send({ ok: false, error: "예기치 못한 에러가 발생하였습니다." + e});
+
+  } catch {
+		return res.send({ ok: false, error: "예기치 못한 에러가 발생하였습니다."});
 	}
 }
 
@@ -87,22 +92,26 @@ export const getSelfUserProfile = async (req, res, next) => {
  export const updateUserRole = async (req, res) => {
   try {
 		const newRole = req.body.role;
+
 		if (newRole !== UserRole.Student
        && newRole !== UserRole.Teacher
        && newRole !== UserRole.Admin) {
       return res.send({ ok: false, error: "존재하지 않는 권한입니다." });
 		}
+
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOneBy({
       id: req.user.id,
     });
+
 		if (user) {
 			user.role = newRole;
 			const { sub, ...result } = await userRepository.save(user);
 			return res.send({ ok: true, result });
 		} else {
-			return res.send({ ok:false, error: "해당 사용자를 조회하지 못했습니다." });
+			return res.send({ ok: false, error: "해당 사용자를 조회하지 못했습니다." });
 		}
+
   } catch {
 		return res.send({ ok: false, error: "예기치 못한 에러가 발생했습니다." });
   }

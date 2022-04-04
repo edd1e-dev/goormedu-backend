@@ -47,7 +47,23 @@ export const logout = async (_, res) => {
 
 export const authStatusConfirm = async (req, res) => {
   try {
-    console.log(req.user?.role);
+    const id = parseInt(req.user?.id ?? "0")
+		const user = await AppDataSource.getRepository(User).findOneBy({ id });
+
+    if (user) {
+      const {sub, ...result } = user; 
+      if (user.role === req.user?.role) {
+        return res.send({ ok: true, result: { roleUpdate: false } }); 
+      } else {
+        const jwtPayload = { id: user.id, role: user.role };
+        const token = jwt.sign(jwtPayload, process.env.JWT_PRIVATEKEY);
+        res.cookie('jwt', token, { httpOnly: true });
+        return res.send({ ok: true, result: { roleUpdate: true } }); 
+      }
+    } else {
+      return res.send({ ok: false, error: "사용자 정보를 조회하지 못했습니다." });
+    }
+  } catch {
+    return res.send({ ok: false, error: "예기치 못한 에러가 발생하였습니다." });
   }
-  catch {}
 }
