@@ -18,6 +18,10 @@ const User = new EntitySchema({
       type: "text",
     },
 
+    thumbnail: {
+      type: "text"
+    },
+
     // passport-google id
     sub: {
       type: "text",

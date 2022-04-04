@@ -4,47 +4,6 @@ import { SimpleConsoleLogger } from "typeorm";
 import { UserRole } from "./UserRole";
 
 /**
- * 사용자 특정 Role 확인해서 차단하는 미들웨어
- * 
- * @param {} req 
- * @param {*} res 
- * @param {*} next 
- * @returns 
- */
- export function verifyUserRole(accessableRole) {
-  return async (req, res, next) => {
-    if(accessableRole.has(req.user.role)) {
-      next();
-    } else {
-      res.send({ ok: false, error: '해당 명령을 실행할 권한이 없습니다.' })
-    }
-  }
-}
-
-/**
- * 로그인된 사용자인지 검증
- * 
- * @param {*} req 
- * @param {*} res 
- * @param {*} next 
- * @returns 
- */
-export const verifyAuthById = async (req, res, next) => {
-  try {
-    if (req.user) {
-      const userId = parseInt(req.user?.id ?? "0");
-      const userRepository = AppDataSource.getRepository(User);
-      const user = await userRepository.findOneBy({ id: userId });
-      next();
-    } else {
-      res.send({ ok: false, error: '사용자 검증에 실패하였습니다.' })
-    }
-  } catch {
-    return res.send({ ok: false, error: "예기치 못한 에러가 발생하였습니다." });
-  } 
-}
-
-/**
  * 해당 사용자의 정보를 조회
  * 
  * /users/:id
@@ -61,7 +20,7 @@ export const findUserById = async (req, res) => {
       const {sub, ...result } = user; 
       return res.send({ ok: true, result }); 
     } else {
-      return res.send({ ok:false, error: "사용자 정보를 조회하지 못했습니다." });
+      return res.send({ ok: false, error: "사용자 정보를 조회하지 못했습니다." });
     }
   } catch {
     return res.send({ ok: false, error: "예기치 못한 에러가 발생하였습니다." });
