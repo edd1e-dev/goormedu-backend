@@ -1,47 +1,49 @@
-import { EntitySchema } from "typeorm";
+import { EntitySchema } from 'typeorm';
 
 const Course = new EntitySchema({
-  name: "Course", 
-  tableName: "Course", 
+  name: 'Course',
+  tableName: 'Course',
   columns: {
     id: {
       primary: true,
-      type: "int",
+      type: 'int',
       generated: true,
     },
 
     teacher_id: {
-        type: "int"
+      type: 'int',
     },
 
     category_id: {
-        type: "int"
+      type: 'int',
     },
 
     title: {
-        type: "text"
+      type: 'text',
     },
 
     description: {
-        type: "text"
+      type: 'text',
     },
 
     // 1 ~ 5
     level: {
-        type: "int"
+      type: 'int',
     },
 
     cover_image: {
-        type: "text"
+      type: 'text',
     },
 
     createdAt: {
-      type: "date"
+      type: 'date',
+      createDate: true,
     },
 
     updatedAt: {
-      type: "date"
-    }
+      type: 'date',
+      updateDate: true,
+    },
   },
 });
 
