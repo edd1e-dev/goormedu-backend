@@ -29,13 +29,12 @@ const LearnApplication = new EntitySchema({
       nullable: true,
     },
 
-    createdAt: {
+    created_at: {
       type: 'date',
-      createDate: true,
     },
 
-    updatedAt: {
-      type: 'date',
+    updated_at: {
+      type: 'timestamp',
       updateDate: true,
     },
   },

@@ -35,14 +35,13 @@ const Course = new EntitySchema({
       type: 'text',
     },
 
-    createdAt: {
+    created_at: {
       type: 'date',
       createDate: true,
     },
 
     updatedAt: {
       type: 'date',
-      updateDate: true,
     },
   },
 });

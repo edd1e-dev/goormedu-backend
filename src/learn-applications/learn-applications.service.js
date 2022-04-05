@@ -4,43 +4,82 @@ import LearnApplication from './learn-application.entity';
 const getLearnApplicationRepository = () =>
   AppDataSource.getRepository(LearnApplication);
 
-export const findLearnApplication = async ({ student_id, course_id }) => {
+/**
+ * completion record's service
+ */
+const countlearning = ({ student_id, course_id }) => 0;
+
+/**
+ * @param where LearnApplication 조회 기준
+ * where은 student_id:number, course_id:number를 property로 갖음
+ * @returns 성공시 LearnApplication, 실패시 null
+ */
+export const findLearnApplication = async (where) => {
   try {
+    const { student_id, course_id } = where; // validation
     const learnApplicationRepository = getLearnApplicationRepository();
-    const learnApplication = await learnApplicationRepository.findOneBy({
+    const learnApplication = await learnApplicationRepository.findOneByOrFail({
       student_id,
       course_id,
     });
-    if (learnApplication) {
-      const { createdAt, updatedAt, ...data } = learnApplication;
-      const count_learning = 0;
-      return { ok: true, result: { ...data, count_learning } };
-    } else {
-      return { ok: false, error: '수강 기록을 조회하지 못했습니다.' };
-    }
-  } catch {
-    return { ok: false, error: '예기치 못한 에러가 발생했습니다.' };
-  }
+    const count_learning = countlearning(where); // 외부로부터 받아야함.
+    return { ...learnApplication, count_learning };
+  } catch {}
+  return null;
 };
-export const createLearnApplication = async ({ student_id, course_id }) => {
+
+/**
+ * @param data LearnApplication 생성 기준
+ * @returns 성공시 LearnApplication, 실패시 null
+ */
+export const createLearnApplication = async (data) => {
   try {
+    const { student_id, course_id } = data; // validation
     const learnApplicationRepository = getLearnApplicationRepository();
     const { createdAt, updatedAt, ...result } =
       await learnApplicationRepository.save(
         learnApplicationRepository.create({ student_id, course_id })
       );
+    return { ...result, count_learning: 0 };
   } catch {}
+  return null;
 };
-export const updateLearnApplication = ({
-  criteria: { student_id, course_id },
-  data: { last_learning_date, last_lecture_id, next_lecture_id },
+
+/**
+ * @param where LearnApplication 조회 기준
+ * @param data 변경할 데이터
+ * @returns 성공시 LearnApplication 단, count_learning제외, 실패시 null
+ */
+export const updateLearnApplication = async ({
+  where: { student_id, course_id },
+  data, // : { last_learning_date, last_lecture_id, next_lecture_id },
 }) => {
   try {
     const learnApplicationRepository = getLearnApplicationRepository();
+    const learnApplication = await learnApplicationRepository.findOneByOrFail({
+      student_id,
+      course_id,
+    });
+    for (const [key, val] of Object.entries(data)) {
+      learnApplication[key] = val;
+    }
+    const { createdAt, updatedAt, ...result } =
+      await learnApplicationRepository.save(learnApplication);
+    return result;
   } catch {}
+  return null;
 };
-export const deleteLearnApplication = ({ student_id, course_id }) => {
+
+/**
+ * @param where LearnApplication 조회 기준
+ * @returns 성공시 where, 실패시 null
+ */
+export const deleteLearnApplication = async (where) => {
   try {
+    const { student_id, course_id } = data; // validation
     const learnApplicationRepository = getLearnApplicationRepository();
+    await learnApplicationRepository.delete({ student_id, course_id });
+    return where;
   } catch {}
+  return null;
 };
