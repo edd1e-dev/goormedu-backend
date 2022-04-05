@@ -29,7 +29,7 @@ const User = new EntitySchema({
 
     // Student | Teacher | Admin
     role: {
-      type: "text",
+      type: "text"
     },
 
     createdAt: {

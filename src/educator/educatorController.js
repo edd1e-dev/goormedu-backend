@@ -14,7 +14,7 @@ export const applyEducator = async (req, res) => {
                 isAccepted: false,
                 career: req.body?.career ?? "",
                 createdAt: new Date(),
-                updatedAt: new Date(),
+                updatedAt: new Date()
             });
             await educatorRepository.save(newEducator); 
             return res.send({ ok: true, result: newEducator});

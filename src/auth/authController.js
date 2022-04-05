@@ -17,7 +17,7 @@ export const login = async (req, res) => {
       role: UserRole.Student,
       thumbnail: picture,
       createdAt: new Date(),
-      updatedAt: new Date(),
+      updatedAt: new Date()
     });
     await userRepository.save(newUser).then(() => {
       signJwtToken({ id: newUser?.id ?? "0", role: UserRole.Student }, res) // id, role

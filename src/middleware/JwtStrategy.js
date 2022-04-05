@@ -15,8 +15,8 @@ export function handleAuthSuccess(req, res, next) {
 }
 
 export function handleAuthFailure(err, req, res, next) {
-  // return res.status(401).send({ success: false, message: err })
-  return res.redirect('/auth/google');
+  return res.status(401).send({ ok: false, error: "JWT Not Authenticated" });
+  // return res.redirect('/auth/google');
 }
 
 
