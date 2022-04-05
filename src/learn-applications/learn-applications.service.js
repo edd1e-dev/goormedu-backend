@@ -18,18 +18,38 @@ export const findLearnApplication = async (where) => {
   try {
     const { student_id, course_id } = where; // validation
     const learnApplicationRepository = getLearnApplicationRepository();
-    const learnApplication = await learnApplicationRepository.findOneByOrFail({
+    const result = await learnApplicationRepository.findOneByOrFail({
       student_id,
       course_id,
     });
-    const count_learning = countlearning(where); // 외부로부터 받아야함.
-    return { ...learnApplication, count_learning };
+    return result;
   } catch {}
   return null;
 };
 
 /**
- * @param data LearnApplication 생성 기준
+ * select course_id from LearnApplication where criteria
+ * @param criteria 조회 기준이 될 값이 들어감, {course_id:number}|{student_id:number}
+ * @returns number[]
+ */
+export const findCourseIds = async (criteria) => {
+  try {
+    const learnApplicationRepository = getLearnApplicationRepository();
+    const result = await learnApplicationRepository.find({
+      where: {
+        ...(criteria.student_id && { student_id: criteria.student_id }),
+        ...(criteria.course_id && { course_id: criteria.course_id }),
+      },
+      select: { course_id },
+    });
+    return result.flat();
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * @param data LearnApplication 생성 기준, student_id, course_id
  * @returns 성공시 LearnApplication, 실패시 null
  */
 export const createLearnApplication = async (data) => {
@@ -40,7 +60,7 @@ export const createLearnApplication = async (data) => {
       await learnApplicationRepository.save(
         learnApplicationRepository.create({ student_id, course_id })
       );
-    return { ...result, count_learning: 0 };
+    return result;
   } catch {}
   return null;
 };

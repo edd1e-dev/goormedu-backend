@@ -17,7 +17,7 @@ const LearnApplication = new EntitySchema({
     },
 
     last_learning_date: {
-      type: 'date',
+      type: 'timestamp',
       nullable: true,
     },
     last_lecture_id: {
@@ -30,7 +30,8 @@ const LearnApplication = new EntitySchema({
     },
 
     created_at: {
-      type: 'date',
+      type: 'timestamp',
+      createDate: true,
     },
 
     updated_at: {

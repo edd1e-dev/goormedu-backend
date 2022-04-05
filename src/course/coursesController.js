@@ -1,4 +1,10 @@
+import { In } from 'typeorm';
 import AppDataSource from '../db';
+import {
+  createLearnApplication,
+  findCourseIds,
+  findLearnApplication,
+} from '../learn-applications/learn-applications.service';
 import Course from './course.entity';
 
 export const findCourseById = async (req, res) => {
@@ -105,13 +111,63 @@ export const deleteCourseById = async (req, res) => {
 
 export const findLearningCourses = async (req, res) => {
   try {
-  } catch {}
+    const ids = await findCourseIds({ student_id: req.user.id }); // :number[]
+    const courseRepository = AppDataSource.getRepository(Course);
+    const result = await courseRepository.findBy({ id: In(ids) });
+    return { ok: true, result };
+  } catch {
+    return { ok: false, error: '수강목록을 조회하지 못했습니다.' };
+  }
 };
 export const findOfferingCourses = async (req, res) => {
   try {
-  } catch {}
+    const courseRepository = AppDataSource.getRepository(Course);
+    const result = await courseRepository.find({
+      where: { teacher_id: req.user.id },
+    });
+    return { ok: true, result };
+  } catch {
+    return { ok: false, error: '담당 코스 목록을 조회하지 못했습니다.' };
+  }
 };
 export const learnCourse = async (req, res) => {
   try {
-  } catch {}
+    const course_id = parseInt(req.params.course_id ?? '0');
+    const student_id = req.user.id;
+    const courseRepository = AppDataSource.getRepository(Course);
+    const course = await courseRepository.findOneBy({ id: course_id });
+    const learnApplication = course
+      ? await createLearnApplication({ student_id, course_id })
+      : null;
+    if (learnApplication) {
+      return {
+        ok: true,
+        result: { ...learnApplication, count_learning: 0 },
+      };
+    } else {
+      return { ok: false, error: '코스가 존재하지 않습니다.' };
+    }
+  } catch {
+    return { ok: false, error: '예기치 못한 에러 발생' };
+  }
 };
+export const findLearningData = async (req, res) => {
+  try {
+    const course_id = parseInt(req.params.course_id ?? '0');
+    const student_id = req.user.id;
+    const where = { course_id, student_id };
+    const data = await findLearnApplication(where);
+    if (data) {
+      return {
+        ok: true,
+        result: { ...data, count_learning: countLearning(where) },
+      };
+    } else {
+      return { ok: false, error: '수강 정보가 존재하지 않습니다.' };
+    }
+  } catch {
+    return { ok: false, error: '예기치 못한 오류가 발생하였습니다.' };
+  }
+};
+
+const countLearning = ({ student_id, course_id }) => 0;
