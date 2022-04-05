@@ -1,8 +1,8 @@
 import { EntitySchema } from "typeorm";
 
-const UserClassroom = new EntitySchema({
-  name: "UserClassroom", 
-  tableName: "UserClassroom", 
+const Classroom = new EntitySchema({
+  name: "Classroom", 
+  tableName: "Classroom", 
   columns: {
     id: {
       primary: true,
@@ -25,4 +25,4 @@ const UserClassroom = new EntitySchema({
   ]
 });
 
-export default UserClassroom;
+export default Classroom;

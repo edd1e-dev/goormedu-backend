@@ -2,6 +2,7 @@ import express from 'express';
 import passport from 'passport';
 import verifyUserRole from '../middleware/VerifyUserRole';
 import verifyAuthById from '../middleware/VerifyAuth';
+import { handleAuthFailure, handleAuthSuccess } from "../middleware/JwtStrategy";
 import {
   findUserById,
   deleteUserById,
@@ -12,11 +13,15 @@ import { UserRole } from './UserRole';
 
 const usersRouter = express.Router();
 
+/*
 usersRouter.get('/verify', (_, res) =>
   res.send({ ok: false, error: '사용자 검증에 실패하였습니다.' }),
 );
 
 usersRouter.use(passport.authenticate('jwt', { session: false, failureRedirect: "/users/verify" }), verifyAuthById);
+*/
+
+usersRouter.use(passport.authenticate('jwt', { session: false, failWithError: true }), handleAuthSuccess, handleAuthFailure);
 
 /* 
   권한 검증 미들웨어 사용

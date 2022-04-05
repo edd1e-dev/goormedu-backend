@@ -43,6 +43,11 @@ export const getSelfUserProfile = async (req, res, next) => {
 
     if (user) {
       const {sub, ...result } = user; 
+      if (user.role !== req.user?.role) {
+        const jwtPayload = { id: user.id, role: user.role };
+        const token = jwt.sign(jwtPayload, process.env.JWT_PRIVATEKEY);
+        res.cookie('jwt', token, { httpOnly: true });
+      }
       return res.send({ ok: true, result }); 
     } else {
       return res.send({ ok: false, error: "사용자 정보를 조회하지 못했습니다." });
