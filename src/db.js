@@ -1,11 +1,5 @@
 import { DataSource } from 'typeorm';
-import User from './users/user.entity';
-import Chapter from './chapter/chapter.entity';
-import Lecture from './lecture/lecture.entity';
-import Category from './category/category.entity';
-import UserClassroom from './userClassroom/userClassroom.entity';
-import Course from './course/course.entity';
-import LearnApplication from './learn-applications/learn-application.entity';
+import LearnRecord from './learn-records/learn-record.entity';
 
 const AppDataSource = new DataSource({
   type: 'mysql',
@@ -17,7 +11,7 @@ const AppDataSource = new DataSource({
   synchronize: true, // true 일 시 테이블 이미 존재한다고 뜰 수 있음. dropSchema: true 필요
   dropSchema: true, // true 일 시 Schema 매번 drop 시킴. 주의!!
   logging: false,
-  entities: [LearnApplication],
+  entities: [LearnRecord],
   subscribers: [],
   migrations: [],
 });

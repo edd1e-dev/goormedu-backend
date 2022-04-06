@@ -1,7 +1,7 @@
 import AppDataSource from '../db';
 import LearnRecord from './learn-record.entity';
 
-export default class LearnRecordService {
+export default class LearnRecordsService {
   #learnRecordRepository;
   constructor() {
     this.#learnRecordRepository = AppDataSource.getRepository(LearnRecord);
@@ -87,7 +87,7 @@ export default class LearnRecordService {
    * @param where LearnRecord 조회 기준
    * @returns 성공시 where, 실패시 null
    */
-  async deleteLearnApplication(where) {
+  async deleteLearnRecord(where) {
     try {
       const { student_id, course_id } = data; // validation
       await this.#learnRecordRepository.delete({ student_id, course_id });

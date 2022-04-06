@@ -1,11 +1,11 @@
 import express from 'express';
-import LearnRecordService from './learn-records.service';
+import LearnRecordsService from './learn-records.service';
 
 export default class LearnRecordController {
   #learnRecordService;
   #router;
   constructor() {
-    this.#learnRecordService = new LearnRecordService();
+    this.#learnRecordService = new LearnRecordsService();
     this.#router = express.Router();
   }
   getRouter() {
