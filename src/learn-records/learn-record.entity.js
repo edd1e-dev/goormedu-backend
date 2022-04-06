@@ -1,8 +1,8 @@
 import { EntitySchema } from 'typeorm';
 
-const LearnApplication = new EntitySchema({
-  name: 'LearnApplication',
-  tableName: 'LearnApplication',
+const LearnRecord = new EntitySchema({
+  name: 'LearnRecord',
+  tableName: 'LearnRecord',
   columns: {
     id: {
       primary: true,
@@ -41,4 +41,4 @@ const LearnApplication = new EntitySchema({
   },
 });
 
-export default LearnApplication;
+export default LearnRecord;
