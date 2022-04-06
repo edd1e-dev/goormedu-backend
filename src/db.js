@@ -1,8 +1,8 @@
 import { DataSource } from "typeorm";
 import User from "./users/user.entity";
-import Chapter from "./chapter/chapter.entity";
+import Chapter from "./chapters/chapters.entity";
 import Lecture from "./lecture/lecture.entity";
-import Category from "./category/category.entity";
+import Category from "./categories/categories.entity";
 import Classroom from "./classroom/classroom.entity";
 import Course from "./course/course.entity";
 import Educator from "./educator/educator.entity";

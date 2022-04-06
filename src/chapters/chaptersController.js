@@ -1,6 +1,6 @@
 
 import AppDataSource from "../db";
-import Chapter from "./chapter.entity";
+import Chapter from "./chapters.entity";
 
 /**
  * 챕터 정보 조회

@@ -1,8 +1,8 @@
 import { EntitySchema } from "typeorm";
 
 const Chapter = new EntitySchema({
-  name: "Chapter", 
-  tableName: "Chapter", 
+  name: "chapter", 
+  tableName: "chapter", 
   columns: {
     id: {
       primary: true,
@@ -22,12 +22,14 @@ const Chapter = new EntitySchema({
       type: "int"
     },
 
-    createdAt: {
-      type: "date"
+    created_at: {
+      type: "timestamp",
+      createDate: true
     },
 
-    updatedAt: {
-      type: "date"
+    updated_at: {
+      type: "date",
+      updateDate: true
     }
   },
 });

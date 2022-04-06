@@ -1,16 +1,16 @@
 import express from "express";
 import authRouter from "./auth/authRouter";
 import userRouter from "./users/usersRouter";
-import categoryRouter from "./category/categoryRouter";
+import categoriesRouter from "./categories/categories.service";
 import educatorRouter from "./educator/educatorRouter";
-import chapterRouter from "./chapter/chapterRouter";
+import chaptersRouter from "./chapters/chaptersRouter";
 
 const globalRouter = express.Router();
 
 globalRouter.use("/users", userRouter);
 globalRouter.use("/auth", authRouter);
-globalRouter.use("/category", categoryRouter);
+globalRouter.use("/categories", categoriesRouter);
 globalRouter.use("/educator", educatorRouter);
-globalRouter.use("/chapter", chapterRouter);
+globalRouter.use("/chapters", chaptersRouter);
 
 export default globalRouter;
