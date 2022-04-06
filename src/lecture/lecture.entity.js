@@ -30,17 +30,30 @@ const Lecture = new EntitySchema({
         type: "text"
     },
 
-    // can be bool
     isPublic: {
-        type: "boolean"
+        type: "bool"
+    },
+
+    order: {
+        type: "int"
+    },
+
+    pre_lecture_id: {
+        type: "int",
+        default: null
+    },
+
+    next_lecture_id: {
+        type: "int",
+        default: null
     },
 
     createdAt: {
-      type: "date"
+        type: "date"
     },
 
     updatedAt: {
-      type: "date"
+        type: "date"
     }
   },
 });

@@ -3,7 +3,10 @@ import User from '../users/user.entity';
 import AppDataSource from '../db';
 import { UserRole } from '../users/UserRole';
 
-// eslint-disable-next-line import/prefer-default-export
+/**
+ * 구글 로그인
+ * /auth/google
+ */
 export const login = async (req, res) => {
   const { sub, email, picture, displayName } = req.user;
   const userRepository = AppDataSource.getRepository(User);
@@ -30,11 +33,21 @@ export const login = async (req, res) => {
   return res.redirect('/'); 
 };
 
+
+/**
+ * JWT 쿠키 생성
+ * @param {JWT 내용} jwtPayload 
+ * @param {*} res 
+ */
 function signJwtToken(jwtPayload, res) {
   const token = jwt.sign(jwtPayload, process.env.JWT_PRIVATEKEY);
   res.cookie('jwt', token, { httpOnly: true });
 }
 
+/**
+ * 로그아웃
+ * /auth/logout
+ */
 export const logout = async (_, res) => {
   try {
     res.clearCookie('jwt').send;
@@ -44,6 +57,10 @@ export const logout = async (_, res) => {
   return res.send({ ok: true });
 };
 
+/**
+ * 로그인 상태 확인
+ * /auth/status
+ */
 export const authStatusConfirm = async (req, res) => {
   try {
     const id = parseInt(req.user?.id ?? "0")

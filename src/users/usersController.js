@@ -5,7 +5,6 @@ import { UserRole } from "./UserRole";
 
 /**
  * 해당 사용자의 정보를 조회
- * 
  * /users/:id
  * @param {*} req 
  * @param {*} res 
@@ -30,7 +29,7 @@ export const findUserById = async (req, res) => {
 
 /**
  * 사용자 본인의 정보를 조회
- * 
+ * jwt내의 role과 내 role이 다르면 jwt를 새로 발급
  * /users/profile
  * @param {*} req 
  * @param {*} res 
@@ -62,7 +61,6 @@ export const getSelfUserProfile = async (req, res, next) => {
  * 해당 사용자의 정보를 삭제
  * 관리자인 경우 모든 삭제 가능
  * 일반 사용자인 경우 본인 계정만 삭제 가능
- * 
  * /users/:id/delete
  * @param {*} req 
  * @param {*} res 
@@ -89,7 +87,6 @@ export const getSelfUserProfile = async (req, res, next) => {
  * 기본적으로 Student이며 Body 값의 role이 지정되어 있을 경우에만 해당 권한으로 변경
  * 관리자만 실행 가능
  * Student | Teacher | Admin
- * 
  * /users/:id/role/update
  * @param {*} req 
  * @param {*} res 

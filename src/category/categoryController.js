@@ -3,8 +3,7 @@ import AppDataSource from "../db";
 
 /**
  * 전체 카테고리를 조회
- * 
- * /category/all
+ * /category
  * @param {*} req 
  * @param {*} res 
  * @returns 

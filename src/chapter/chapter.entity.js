@@ -18,6 +18,10 @@ const Chapter = new EntitySchema({
         type: "text"
     },
 
+    order: {
+      type: "int"
+    },
+
     createdAt: {
       type: "date"
     },

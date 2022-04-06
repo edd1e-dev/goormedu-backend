@@ -1,7 +1,6 @@
 import express from 'express';
 import passport from 'passport';
 import verifyUserRole from '../middleware/VerifyUserRole';
-import verifyAuthById from '../middleware/VerifyAuth';
 import { handleAuthFailure, handleAuthSuccess } from "../middleware/JwtStrategy";
 import {
   findUserById,
