@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import LearnRecord from './learn-records/learn-record.entity';
+import LearnRecord from './courses/entities/learn-record.entity';
 
 const AppDataSource = new DataSource({
   type: 'mysql',

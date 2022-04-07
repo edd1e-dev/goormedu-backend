@@ -1,8 +1,8 @@
 import { EntitySchema } from 'typeorm';
 
 const Course = new EntitySchema({
-  name: 'Course',
-  tableName: 'Course',
+  name: 'course',
+  tableName: 'course',
   columns: {
     id: {
       primary: true,

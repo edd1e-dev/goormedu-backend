@@ -1,5 +1,5 @@
-import AppDataSource from '../db';
-import LearnRecord from './learn-record.entity';
+import AppDataSource from '../../db';
+import LearnRecord from '../entities/learn-record.entity';
 
 export default class LearnRecordsService {
   #learnRecordRepository;
@@ -8,16 +8,17 @@ export default class LearnRecordsService {
   }
 
   /**
-   * @param where LearnRecord 조회 기준
-   * where은 student_id:number, course_id:number를 property로 갖음
+   * 특정 사용자의 특정 강의에 대한 수강 기록 조회
+   * @param where LearnRecord 조회 기준, student_id, course_id를 포함
+   * @param select 조회결과에 포함될 데이터 정의
    * @returns 성공시 LearnRecord, 실패시 null
    */
-  async findLearnRecord(where) {
+  async findLearnRecord({ where, select }) {
     try {
       const { student_id, course_id } = where; // validation
-      const result = await this.#learnRecordRepository.findOneByOrFail({
-        student_id,
-        course_id,
+      const result = await this.#learnRecordRepository.findOneOrFail({
+        where: { student_id, course_id },
+        ...(select && { select }),
       });
       return result;
     } catch {}
@@ -25,21 +26,19 @@ export default class LearnRecordsService {
   }
 
   /**
-   * select course_id from LearnRecord where criteria
-   * @param criteria 조회 기준이 될 값이 들어감, {course_id:number}|{student_id:number}
-   * @returns number[] courseId 배열
+   * 학생이 수강한 course의 id를 조회
+   * @param student_id
+   * @returns 성공시 number[], 실패시 null
    */
-  async findCourseIds(criteria) {
+  async findCourseIdsByStudentId({ student_id }) {
     try {
-      const { student_id, course_id } = criteria;
       const result = await this.#learnRecordRepository.find({
         where: {
-          ...(student_id && { student_id }),
-          ...(course_id && { course_id }),
+          student_id,
         },
         select: { course_id },
       });
-      return result.flat();
+      return result.map((la) => la.course_id);
     } catch {
       return null;
     }
