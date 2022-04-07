@@ -13,8 +13,7 @@ import {
   updateLectureById,
 } from './lecturesController';
 
-import multer from 'multer';
-const upload = multer({ dest: 'uploads' });
+import { upload } from '../middleware/Multer';
 
 const lecturesRouter = express.Router();
 
@@ -32,7 +31,7 @@ lecturesRouter.get('/:id/detail', findLectureDetail);
 lecturesRouter.post(
   '/create',
   verifyUserRole(UserRole.Teacher, UserRole.Admin),
-  upload.single('image'),
+  upload.single('file'),
   createLecture
 );
 

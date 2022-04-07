@@ -83,10 +83,9 @@ export const createLecture = async (req, res) => {
       body['content'] = content;
     }
 
-    const image = req.file.path;
-
-    // 파일 올리기 -> 미구현
-    const video_url = 's3://url';
+    // 파일 올리기
+    // -> 에러 처리 필요
+    const video_url = req.file.location;
 
     const { createdAt, updatedAt, ...result } = await lectureRepository.save(
       lectureRepository.create({
@@ -100,7 +99,8 @@ export const createLecture = async (req, res) => {
       // order 값을 어떻게 계살 할지 -> 논의
     );
     return res.send({ ok: true, result });
-  } catch {
+  } catch (e) {
+    console.log(e);
     return res.send({ ok: false, error: '예기치 못한 에러가 발생하였습니다.' });
   }
 };
