@@ -28,7 +28,7 @@ const Chapter = new EntitySchema({
     },
 
     updated_at: {
-      type: "date",
+      type: "timestamp",
       updateDate: true
     }
   },
