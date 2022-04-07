@@ -54,14 +54,6 @@ export default class CoursesController {
   }
 
   getRouter() {
-    const jwtMiddleware = () => {};
-    const role = (...arg) => {};
-    /**
-     * req.body, req.file등을 보고 s3과정을 거쳐 알맞는 data를 반환
-     */
-    const getData = async ({ body, file }) => {};
-    const countCompleteRecord = async () => {};
-
     // public
 
     this.#router.get('/', (_, res) =>
@@ -188,7 +180,10 @@ export default class CoursesController {
             },
             select: this.#learnRecord,
           })),
-          count_complete_record: await countCompleteRecord(),
+          count_complete_record: await countCompleteRecord({
+            student_id: req.user.id,
+            course_id: parseInt(req.params.course_id),
+          }),
         }),
         res
       )
