@@ -1,18 +1,18 @@
-import { EntitySchema } from "typeorm";
+import { EntitySchema } from 'typeorm';
 
 const Category = new EntitySchema({
-  name: "category",
-  tableName: "category",
+  name: 'category',
+  tableName: 'category',
   columns: {
     id: {
       primary: true,
-      type: "int",
+      type: 'int',
       generated: true,
     },
 
     title: {
-        type: "text"
-    }
+      type: 'text',
+    },
   },
 });
 

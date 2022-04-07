@@ -1,10 +1,10 @@
-import express from "express";
-import cookieParser from "cookie-parser";
-import { urlencoded } from "express";
-import passport from "passport";
-import globalRouter from "./globalRouter";
-import GoogleStrategy from "./middleware/GoogleStrategy";
-import JwtStrategy from "./middleware/JwtStrategy";
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import { urlencoded } from 'express';
+import passport from 'passport';
+import globalRouter from './globalRouter';
+import GoogleStrategy from './middleware/GoogleStrategy';
+import JwtStrategy from './middleware/JwtStrategy';
 
 const app = express();
 
@@ -16,6 +16,6 @@ app.disable('x-powered-by'); // 헤더의 x-powered-by: Express 숨기기
 passport.use(GoogleStrategy);
 passport.use(JwtStrategy);
 
-app.use("/", globalRouter); // 모든 요청을 globalRouter로
+app.use('/', globalRouter); // 모든 요청을 globalRouter로
 
 export default app;

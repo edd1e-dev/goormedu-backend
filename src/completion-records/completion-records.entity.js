@@ -1,8 +1,8 @@
 import { EntitySchema } from 'typeorm';
 
 const CompletionRecord = new EntitySchema({
-  name: 'completionrecord',
-  tableName: 'completionrecord',
+  name: 'completion_record',
+  tableName: 'completion_record',
   columns: {
     id: {
       primary: true,

@@ -1,6 +1,6 @@
-import "dotenv/config";
-import app from "./app";
-import AppDataSource from "./db";
+import 'dotenv/config';
+import app from './app';
+import AppDataSource from './db';
 
 AppDataSource.initialize()
   .then(() =>
@@ -8,4 +8,4 @@ AppDataSource.initialize()
       console.log(`✅ Listening on: 'http://localhost:${process.env.PORT}`);
     })
   )
-  .catch((e ) => console.log(`❌ DB connection fail: ${e}`));
+  .catch((e) => console.log(`❌ DB connection fail: ${e}`));

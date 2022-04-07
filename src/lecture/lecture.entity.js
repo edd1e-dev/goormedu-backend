@@ -1,60 +1,60 @@
-import { EntitySchema } from "typeorm";
+import { EntitySchema } from 'typeorm';
 
 const Lecture = new EntitySchema({
-  name: "Lecture", 
-  tableName: "Lecture", 
+  name: 'Lecture',
+  tableName: 'Lecture',
   columns: {
     id: {
       primary: true,
-      type: "int",
+      type: 'int',
       generated: true,
     },
 
     course_id: {
-        type: "int"
+      type: 'int',
     },
 
     chapter_id: {
-        type: "int"
+      type: 'int',
     },
 
     title: {
-        type: "text"
+      type: 'text',
     },
 
     video: {
-        type: "text"
+      type: 'text',
     },
 
     content: {
-        type: "text"
+      type: 'text',
     },
 
     isPublic: {
-        type: "bool"
+      type: 'bool',
     },
 
     order: {
-        type: "int"
+      type: 'int',
     },
 
     pre_lecture_id: {
-        type: "int",
-        default: null
+      type: 'int',
+      default: null,
     },
 
     next_lecture_id: {
-        type: "int",
-        default: null
+      type: 'int',
+      default: null,
     },
 
     createdAt: {
-        type: "date"
+      type: 'date',
     },
 
     updatedAt: {
-        type: "date"
-    }
+      type: 'date',
+    },
   },
 });
 

@@ -16,7 +16,7 @@ function verifyUserRole(...accssableRoleParam) {
     } else {
       res.send({ ok: false, error: '해당 명령을 실행할 권한이 없습니다.' });
     }
-  }
+  };
 }
 
 export default verifyUserRole;

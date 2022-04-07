@@ -1,8 +1,8 @@
 import { EntitySchema } from 'typeorm';
 
-const Chapter = new EntitySchema({
-  name: 'chapter',
-  tableName: 'chapter',
+const User = new EntitySchema({
+  name: 'user',
+  tableName: 'user',
   columns: {
     id: {
       primary: true,
@@ -10,16 +10,26 @@ const Chapter = new EntitySchema({
       generated: true,
     },
 
-    course_id: {
-      type: 'int',
-    },
-
-    title: {
+    email: {
       type: 'text',
     },
 
-    order: {
-      type: 'int',
+    username: {
+      type: 'text',
+    },
+
+    thumbnail: {
+      type: 'text',
+    },
+
+    // passport-google id
+    sub: {
+      type: 'text',
+    },
+
+    // Student | Teacher | Admin
+    role: {
+      type: 'text',
     },
 
     created_at: {
@@ -34,4 +44,4 @@ const Chapter = new EntitySchema({
   },
 });
 
-export default Chapter;
+export default User;

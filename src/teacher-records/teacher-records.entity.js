@@ -1,8 +1,8 @@
 import { EntitySchema } from "typeorm";
 
-const Educator = new EntitySchema({
-  name: "Educator", 
-  tableName: "Educator", 
+const TeacherRecord = new EntitySchema({
+  name: "teacher_record", 
+  tableName: "teacher_record", 
   columns: {
     id: {
       primary: true,
@@ -14,7 +14,7 @@ const Educator = new EntitySchema({
         type: "int"
     },
 
-    isAccepted: {
+    accepted: {
         type: "bool"
     },
 
@@ -22,14 +22,16 @@ const Educator = new EntitySchema({
         type: "text"
     },
 
-    createdAt: {
-      type: "date"
+    created_at: {
+      type: "timestamp",
+      createDate: true
     },
 
-    updatedAt: {
-      type: "date"
+    updated_at: {
+      type: "timestamp",
+      updateDate: true
     }
   },
 });
 
-export default Educator;
+export default TeacherRecord;

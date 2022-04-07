@@ -1,5 +1,5 @@
-import Category from "./categories.entity";
-import AppDataSource from "../db";
+import Category from './categories.entity';
+import AppDataSource from '../db';
 
 export default class CategoriesService {
   #categoryRepository;

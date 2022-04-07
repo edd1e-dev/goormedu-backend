@@ -18,7 +18,7 @@ const GoogleStrategy = new _GoogleStrategy(
     const { sub: _sub, email, picture, displayName } = profile;
     const sub = _sub + '';
     return done(null, { sub, email, picture, displayName });
-  },
+  }
 );
 
 export default GoogleStrategy;

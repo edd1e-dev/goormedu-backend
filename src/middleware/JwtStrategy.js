@@ -1,7 +1,7 @@
-import { Strategy } from "passport-jwt";
+import { Strategy } from 'passport-jwt';
 
 const option = {
-  jwtFromRequest: (req) => req.cookies["jwt"] ?? null,
+  jwtFromRequest: (req) => req.cookies['jwt'] ?? null,
   secretOrKey: process.env.JWT_PRIVATEKEY,
 };
 
@@ -15,9 +15,8 @@ export function handleAuthSuccess(req, res, next) {
 }
 
 export function handleAuthFailure(err, req, res, next) {
-  return res.status(401).send({ ok: false, error: "JWT Not Authenticated" });
+  return res.status(401).send({ ok: false, error: 'JWT Not Authenticated' });
   // return res.redirect('/auth/google');
 }
-
 
 export default JwtStrategy;
