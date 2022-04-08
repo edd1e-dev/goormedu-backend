@@ -7,13 +7,16 @@ import CategoriesController from './categories/categories.controller';
 
 const globalRouter = express.Router();
 
-globalRouter.use('/users', new UsersController().getRouter());
-globalRouter.use('/auth', new AuthController().getRouter());
-globalRouter.use('/categories', new CategoriesController().getRouter());
-globalRouter.use(
-  '/teacher-records',
-  new TeacherRecordsController().getRouter()
-);
-globalRouter.use('/chapters', new ChaptersController().getRouter());
+const controllers = {
+  usersController: new UsersController(),
+  authController: new AuthController(),
+  categoriesController: new CategoriesController(),
+  teacherRecordsController: new TeacherRecordsController(),
+  chaptersController: new ChaptersController(),
+};
+
+for (const [_, controller] of Object.entries(controllers)) {
+  globalRouter.use(controller.getRoute(), controller.getRouter());
+}
 
 export default globalRouter;

@@ -9,10 +9,16 @@ import TeacherRecordsService from './teacher-records.service';
 export default class TeacherRecordsController {
   #teacherRecordService;
   #router;
+  #route;
 
   constructor() {
     this.#teacherRecordService = new TeacherRecordsService();
     this.#router = express.Router();
+    this.#route = '/teacher-records';
+  }
+
+  getRoute() {
+    return this.#route;
   }
 
   getRouter() {
@@ -43,7 +49,8 @@ export default class TeacherRecordsController {
           });
         }
         return res.send({ ok: true, result: teacherRecordData });
-      } catch {
+      } catch (error) {
+        console.log(error);
         return res.send({
           ok: false,
           error: '예기치 못한 에러가 발생하였습니다.',
@@ -56,8 +63,15 @@ export default class TeacherRecordsController {
         const student_id = parseInt(req.user.id ?? '0');
         const teacherRecordData =
           await this.#teacherRecordService.findTeacherRecord(student_id);
+        if (!teacherRecordData) {
+          return res.send({
+            ok: false,
+            error: '신청 정보가 존재하지 않습니다.',
+          });
+        }
         return res.send({ ok: true, result: teacherRecordData });
-      } catch {
+      } catch (error) {
+        console.log(error);
         return res.send({
           ok: false,
           error: '예기치 못한 에러가 발생하였습니다.',

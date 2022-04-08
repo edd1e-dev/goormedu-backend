@@ -12,10 +12,16 @@ import jwt from 'jsonwebtoken';
 export default class UsersController {
   #userService;
   #router;
+  #route;
 
   constructor() {
     this.#userService = new UsersService();
     this.#router = express.Router();
+    this.#route = '/users';
+  }
+
+  getRoute() {
+    return this.#route;
   }
 
   getRouter() {
@@ -44,7 +50,8 @@ export default class UsersController {
             error: '사용자 정보를 조회하지 못했습니다.',
           });
         }
-      } catch {
+      } catch (error) {
+        console.log(error);
         return res.send({
           ok: false,
           error: '예기치 못한 에러가 발생하였습니다.',
@@ -62,12 +69,22 @@ export default class UsersController {
             error: '해당 명령을 실행할 권한이 없습니다.',
           });
         }
-        const userData = await this.#userService.deleteUserById(userId);
+
+        let userData = await this.#userService.findUserById(userId);
+        if (!userData) {
+          return res.send({
+            ok: false,
+            error: '사용자 정보를 조회하지 못했습니다.',
+          });
+        }
+
+        userData = await this.#userService.deleteUserById(userId);
         if (userData) {
           return res.send({ ok: true, result: { userId } });
         }
         return null;
-      } catch {
+      } catch (error) {
+        console.log(error);
         return res.send({
           ok: false,
           error: '예기치 못한 에러가 발생하였습니다.',
@@ -102,7 +119,8 @@ export default class UsersController {
             ok: false,
             error: '해당 사용자를 조회하지 못했습니다.',
           });
-        } catch {
+        } catch (error) {
+          console.log(error);
           return res.send({
             ok: false,
             error: '예기치 못한 에러가 발생했습니다.',
@@ -114,7 +132,7 @@ export default class UsersController {
     this.#router.get('/:user_id', async (req, res) => {
       try {
         const userId = parseInt(req.params?.user_id ?? '0');
-        const userData = this.#userService.findUserById(userId);
+        const userData = await this.#userService.findUserById(userId);
         if (userData) {
           return res.send({ ok: true, result: userData });
         } else {
@@ -123,7 +141,8 @@ export default class UsersController {
             error: '사용자 정보를 조회하지 못했습니다.',
           });
         }
-      } catch {
+      } catch (error) {
+        console.log(error);
         return res.send({
           ok: false,
           error: '예기치 못한 에러가 발생하였습니다.',

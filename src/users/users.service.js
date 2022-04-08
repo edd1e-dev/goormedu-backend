@@ -8,6 +8,10 @@ export default class UsersService {
     this.#userRepository = AppDataSource.getRepository(User);
   }
 
+  /**
+   * @param {*} userId User Entity의 id
+   * @returns 성공 시 sub가 제외된 User Entity 실패 시 null
+   */
   async findUserProfile(userId) {
     try {
       const id = userId;
@@ -19,11 +23,16 @@ export default class UsersService {
       }
 
       return null;
-    } catch {
+    } catch (error) {
+      console.log(error);
       return null;
     }
   }
 
+  /**
+   * @param {*} userId User Entity의 id
+   * @returns 성공 시 User Entity 실패 시 null
+   */
   async deleteUserById(userId) {
     try {
       const id = userId;
@@ -33,11 +42,17 @@ export default class UsersService {
         return user;
       }
       return null;
-    } catch {
+    } catch (error) {
+      console.log(error);
       return null;
     }
   }
 
+  /**
+   * @param {*} userId User Entity의 id
+   * @param {*} newRole UserRole 객체
+   * @returns 성공 시 sub가 제외된 User Entity 실패 시 null
+   */
   async updateUserRole(userId, newRole) {
     try {
       const id = userId;
@@ -49,7 +64,8 @@ export default class UsersService {
         return result;
       }
       return null;
-    } catch {
+    } catch (error) {
+      console.log(error);
       return null;
     }
   }
@@ -65,7 +81,8 @@ export default class UsersService {
       }
 
       return null;
-    } catch {
+    } catch (error) {
+      console.log(error);
       return null;
     }
   }

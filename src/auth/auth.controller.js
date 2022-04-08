@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 import express from 'express';
 import AuthService from './auth.service';
 import passport from 'passport';
@@ -10,19 +11,19 @@ import { UserRole } from '../users/users.constant';
 export default class AuthController {
   #authService;
   #router;
+  #route;
 
   constructor() {
     this.#authService = new AuthService();
     this.#router = express.Router();
+    this.#route = '/auth';
+  }
+
+  getRoute() {
+    return this.#route;
   }
 
   getRouter() {
-    this.#router.use(
-      passport.authenticate('jwt', { session: false, failWithError: true }),
-      handleAuthSuccess,
-      handleAuthFailure
-    );
-
     this.#router.get('/google', passport.authenticate('google'));
 
     this.#router.get('/fail', (_, res) =>
@@ -42,7 +43,7 @@ export default class AuthController {
         if (req.user) {
           const userData = await this.#authService.findUserBySub(req.user);
           if (!userData) {
-            const newUserData = await this.#authService.createNewUser(userData);
+            const newUserData = await this.#authService.createNewUser(req.user);
             if (newUserData) {
               const token = jwt.sign(
                 { id: newUserData?.id ?? '0', role: UserRole.Student },
@@ -62,7 +63,7 @@ export default class AuthController {
               res.cookie('jwt', token, { httpOnly: true });
             }
           }
-          return res.redirect('/'); 
+          return res.redirect('/');
         } else {
           return res.send({
             ok: false,
@@ -72,13 +73,20 @@ export default class AuthController {
       }
     );
 
+    this.#router.use(
+      passport.authenticate('jwt', { session: false, failWithError: true }),
+      handleAuthSuccess,
+      handleAuthFailure
+    );
+
     this.#router.get('/logout', (_, res) => {
       try {
         res.clearCookie('jwt').send;
-      } catch {
+        return res.send({ ok: true });
+      } catch (error) {
+        console.log(error);
         return res.send({ ok: false });
       }
-      return res.send({ ok: true });
     });
 
     this.#router.get('/status', async (req, res) => {
@@ -86,8 +94,9 @@ export default class AuthController {
         const userId = parseInt(req.user?.id ?? '0');
         const userData = await this.#authService.confirmAuthStatus(userId);
         if (userData) {
-          const id = userData.id, role = userData.role;
-          
+          const id = userData.id,
+            role = userData.role;
+
           if (role === req.user?.role) {
             return res.send({ ok: true, result: { roleUpdate: false } });
           } else {
@@ -102,7 +111,8 @@ export default class AuthController {
             error: '사용자 정보를 조회하지 못했습니다.',
           });
         }
-      } catch {
+      } catch (error) {
+        console.log(error);
         return res.send({
           ok: false,
           error: '예기치 못한 에러가 발생하였습니다.',

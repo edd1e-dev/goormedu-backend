@@ -9,14 +9,15 @@ export default class CategoriesService {
   }
 
   /**
-   * @param select Categories 조회 결과 형식을 지정
-   * @returns 성공 시 Categories 실패 시 null
+   * @param {*} select Categories 조회 결과 형식을 지정
+   * @returns 성공 시 Categories Entity 실패 시 null
    */
   async findAllCategories(select) {
     try {
       const result = await this.#categoryRepository.find(select);
       return result;
-    } catch {
+    } catch (error) {
+      console.log(error);
       return null;
     }
   }

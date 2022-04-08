@@ -1,36 +1,36 @@
-import { EntitySchema } from "typeorm";
+import { EntitySchema } from 'typeorm';
 
 const TeacherRecord = new EntitySchema({
-  name: "teacher_record", 
-  tableName: "teacher_record", 
+  name: 'teacher_record',
+  tableName: 'teacher_record',
   columns: {
     id: {
       primary: true,
-      type: "int",
+      type: 'int',
       generated: true,
     },
 
     student_id: {
-        type: "int"
+      type: 'int',
     },
 
     accepted: {
-        type: "bool"
+      type: 'bool',
     },
 
     career: {
-        type: "text"
+      type: 'text',
     },
 
     created_at: {
-      type: "timestamp",
-      createDate: true
+      type: 'timestamp',
+      createDate: true,
     },
 
     updated_at: {
-      type: "timestamp",
-      updateDate: true
-    }
+      type: 'timestamp',
+      updateDate: true,
+    },
   },
 });
 

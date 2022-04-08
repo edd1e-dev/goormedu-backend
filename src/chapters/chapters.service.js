@@ -1,16 +1,38 @@
 import Chapter from './chapters.entity';
 import AppDataSource from '../db';
+import Course from '../course/course.entity';
 
 export default class ChaptersService {
+  #courseRepository;
   #chapterRepository;
 
   constructor() {
+    this.#courseRepository = AppDataSource.getRepository(Course);
     this.#chapterRepository = AppDataSource.getRepository(Chapter);
   }
 
   /**
-   * @param select Categories 조회 결과 형식을 지정
-   * @returns 성공 시 Chapters 조회 및 강의 빈 배열 추가 결과 실패 시 null
+   * @param {*} courseId 코스 번호
+   * @returns 성공 시 Course Entity 실패 시 null
+   */
+  async findCourseByCourseId(courseId) {
+    try {
+      const id = courseId;
+      const courseData = await this.#courseRepository.findOneBy({ id });
+
+      if (courseData) {
+        return courseData;
+      }
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
+
+  /**
+   * @param {*} select Category 조회 결과 형식
+   * @returns 성공 시 Chapters Entity 실패 시 null
    */
   async findChaptersByCourseId(where, select) {
     try {
@@ -24,21 +46,22 @@ export default class ChaptersService {
         }
       }
       return chapterData;
-    } catch {
+    } catch (error) {
+      console.log(error);
       return null;
     }
   }
 
   /**
-   * @param chapterData Chapters 조회 및 강의 빈 배열 추가 결과
+   * @param chapterData Chapter Entity
    * @param where 코스 번호
-   * @returns 성공 시 Categories 실패 시 null
+   * @returns 성공 시 Chapter Entity + Lecture Entity 실패 시 null
    */
   async findLecturesByCourseId(chapterData, where) {
     try {
       const lectureData = await this.#chapterRepository
-        .query(`SELECT lecture.chapter_id, lecture.id, lecture.title, lecture.order, completionrecord.lecture_id FROM lecture \
-                LEFT JOIN completionrecord ON lecture.id = completionrecord.lecture_id \
+        .query(`SELECT lecture.chapter_id, lecture.id, lecture.title, lecture.order, completion_record.lecture_id FROM lecture \
+                LEFT JOIN completion_record ON lecture.id = completion_record.lecture_id \
                 WHERE lecture.course_id = ${where}`);
 
       if (lectureData) {
@@ -58,7 +81,8 @@ export default class ChaptersService {
         }
         return chapterData;
       }
-    } catch {
+    } catch (error) {
+      console.log(error);
       return null;
     }
   }

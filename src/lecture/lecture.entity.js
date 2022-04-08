@@ -1,8 +1,8 @@
 import { EntitySchema } from 'typeorm';
 
 const Lecture = new EntitySchema({
-  name: 'Lecture',
-  tableName: 'Lecture',
+  name: 'lecture',
+  tableName: 'lecture',
   columns: {
     id: {
       primary: true,
@@ -48,12 +48,14 @@ const Lecture = new EntitySchema({
       default: null,
     },
 
-    createdAt: {
-      type: 'date',
+    created_at: {
+      type: 'timestamp',
+      createDate: true,
     },
 
-    updatedAt: {
-      type: 'date',
+    updated_at: {
+      type: 'timestamp',
+      updateDate: true,
     },
   },
 });
