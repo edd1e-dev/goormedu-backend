@@ -1,22 +1,23 @@
-import res from 'express/lib/response';
-import AppDataSource from '../db';
-import Lecture from './lecture.entity';
+import AppDataSource from '../../db';
+import Lecture from '../entities/lecture.entity';
 
 export default class LecturesService {
-  #lecturRepository;
-  constructor(otherTmpService) {
-    this.#lecturRepository = AppDataSource.getRepository(Lecture);
+  #lectureRepository;
+  constructor(otherService) {
+    this.#lectureRepository = AppDataSource.getRepository(Lecture);
   }
 
   /**
    *
-   * @param {*} lecture_id
-   * @returns
+   * @param id lecture id
+   * @param select
+   * @returns lecture | null
    */
-  async findLectureByLectureId(lecture_id) {
+  async findLectureById({ id, select }) {
     try {
-      const result = await this.#lecturRepository.findOneOrFail({
-        id: lecture_id,
+      const result = await this.#lectureRepository.findOneOrFail({
+        where: { id },
+        ...(select && { select }),
       });
       return result;
     } catch {
@@ -26,32 +27,15 @@ export default class LecturesService {
 
   /**
    *
-   * @param {*} data
-   * @returns
+   * @param data title, video_url?, content?, order, is_public?, chapter_id, course_id, teacher_id,
+   * @returns lecture | null
    */
   async createLecture(data) {
     try {
-      const { content, ...body } = data;
-
-      if (content) {
-        body['content'] = content;
-      }
-
-      // multer로 s3에 파일 올리기
-      // -> 에러 처리 필요
-      const video_url = req.file.location;
-
-      const { createdAt, updatedAt, ...result } =
-        await this.#lecturRepository.save(
-          lectureRepository.create({
-            ...body,
-            video_url,
-            // date 관련 코드 수정 -> entity에서 자동으로 하게됨.
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
-        );
-      return res.send({ ok: true, result });
+      const result = await this.#lectureRepository.save(
+        this.#lectureRepository.create({ ...data })
+      );
+      return result;
     } catch {
       return null;
     }
@@ -59,27 +43,42 @@ export default class LecturesService {
 
   /**
    *
-   * @param {*} lecture_id
-   * @param {*} data
+   * @param where  id, teacher_id
+   * @param data  변경할 데이터
+   * @returns lecture | null
    */
-  async updateLectureById(lecture_id, data) {
-    // multer관련 데이터 삭제와
-    // order 구현 후 구현 예정
-    // 미구현
+  async updateLecture({ where, data: { video_url, ...rest } }) {
+    try {
+      const lecture = await this.#lectureRepository.findOneOrFail({ where });
+      for (const [key, val] of Object.entries(rest)) lecture[key] = val;
+      if (video_url) {
+        // s3에서 기존의 데이터 삭제 요청
+        lecture.video_url = video_url;
+      }
+      const result = await this.#lectureRepository.save(lecture);
+      return result;
+    } catch {
+      return null;
+    }
   }
 
   /**
    *
-   * @param {*} lecture_id
-   * @returns
+   * @param id lecture id
+   * @param teacher_id
+   * @returns '{ id }' | null
    */
-  async deleteLectureById(lecture_id) {
+  async deleteLecture({ id, teacher_id }) {
     try {
-      await this.#lecturRepository.delete({ id: lecture_id });
-
-      // s3 데이터도 삭제 -> 미구현
-
-      return { id: lecture_id };
+      const { video_url } = await this.#lectureRepository.findOneOrFail({
+        where: { id, teacher_id },
+        select: { video_url: true },
+      });
+      if (video_url) {
+        // s3에서 데이터 삭제 요청
+      }
+      await this.#lectureRepository.delete({ id, teacher_id });
+      return { id };
     } catch {
       return null;
     }
