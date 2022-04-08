@@ -170,11 +170,18 @@ export default class CoursesService {
 
   /**
    *
-   * @param where delete할 대상의 id와 teacher_id를 포함
+   * @param id course id
+   * @param teacher_id
    * @returns 성공시 id를 담은 객체, 실패시 null
    */
-  async deleteCourse({ where: { id, teacher_id } }) {
+  async deleteCourse({ id, teacher_id }) {
     try {
+      const { cover_image } = await this.#courseRepository.findOneOrFail({
+        where: { id, teacher_id },
+      });
+      if (cover_image) {
+        // s3에서 데이터 삭제 요청
+      }
       await this.#courseRepository.delete({ id, teacher_id });
       return { id };
     } catch {

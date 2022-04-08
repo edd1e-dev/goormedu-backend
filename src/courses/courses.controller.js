@@ -149,10 +149,8 @@ export default class CoursesController {
       (req, res) =>
         this.#getApi(
           this.#coursesService.deleteCourse({
-            where: {
-              id: parseInt(req.params.course_id),
-              teacher_id: req.user.id,
-            },
+            id: parseInt(req.params.course_id),
+            teacher_id: req.user.id,
           }),
           res
         )
