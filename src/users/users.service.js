@@ -1,5 +1,6 @@
 import User from './users.entity';
-import AppDataSource from '../db';
+import AppDataSource from '@/db';
+import { Repository } from 'typeorm';
 
 export default class UsersService {
   #userRepository;

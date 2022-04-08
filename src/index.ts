@@ -1,11 +1,11 @@
-import 'dotenv/config';
+import env from './config';
 import app from './app';
 import AppDataSource from './db';
 
 AppDataSource.initialize()
   .then(() =>
-    app.listen(process.env.PORT, () => {
-      console.log(`✅ Listening on: 'http://localhost:${process.env.PORT}`);
-    })
+    app.listen(env.PORT, () => {
+      console.log(`✅ Listening on: 'http://${env.DOMAIN}:${env.PORT}`);
+    }),
   )
   .catch((e) => console.log(`❌ DB connection fail: ${e}`));

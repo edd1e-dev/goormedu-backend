@@ -1,34 +1,32 @@
-import express from 'express';
+import express, { Router } from 'express';
 import passport from 'passport';
-import {
-  handleAuthFailure,
-  handleAuthSuccess,
-} from '../middleware/JwtStrategy';
 import verifyUserRole from '../middleware/VerifyUserRole';
 import { UserRole } from './users.constant';
 import UsersService from './users.service';
 import jwt from 'jsonwebtoken';
+import { Controller } from '@/interfaces/controller';
 
-export default class UsersController {
-  #userService;
-  #router;
-  #route;
+export default class UsersController implements Controller {
+  private userService: Service;
+  private router: Router;
+  private route: string;
 
   constructor() {
-    this.#userService = new UsersService();
-    this.#router = express.Router();
-    this.#route = '/users';
+    this.userService = new UsersService();
+    this.router = express.Router();
+    this.route = '/users';
   }
 
   getRoute() {
-    return this.#route;
+    return this.route;
   }
 
   getRouter() {
+    /** 
     this.#router.use(
       passport.authenticate('jwt', { session: false, failWithError: true }),
       handleAuthSuccess,
-      handleAuthFailure
+      handleAuthFailure,
     );
 
     this.#router.get('/profile', async (req, res) => {
@@ -92,42 +90,31 @@ export default class UsersController {
       }
     });
 
-    this.#router.post(
-      '/:user_id/role/update',
-      verifyUserRole(UserRole.Admin),
-      async (req, res) => {
-        try {
-          const newRole = req.body?.role ?? UserRole.Teacher;
-          const userId = req.params?.user_id ?? '0';
+    this.#router.post('/:user_id/role/update', verifyUserRole(UserRole.Admin), async (req, res) => {
+      try {
+        const newRole = req.body?.role ?? UserRole.Teacher;
+        const userId = req.params?.user_id ?? '0';
 
-          if (
-            newRole !== UserRole.Student &&
-            newRole !== UserRole.Teacher &&
-            newRole !== UserRole.Admin
-          ) {
-            return res.send({ ok: false, error: '존재하지 않는 권한입니다.' });
-          }
-
-          const userData = await this.#userService.updateUserRole(
-            userId,
-            newRole
-          );
-          if (userData) {
-            return res.send({ ok: true, result: userData });
-          }
-          return res.send({
-            ok: false,
-            error: '해당 사용자를 조회하지 못했습니다.',
-          });
-        } catch (error) {
-          console.log(error);
-          return res.send({
-            ok: false,
-            error: '예기치 못한 에러가 발생했습니다.',
-          });
+        if (newRole !== UserRole.Student && newRole !== UserRole.Teacher && newRole !== UserRole.Admin) {
+          return res.send({ ok: false, error: '존재하지 않는 권한입니다.' });
         }
+
+        const userData = await this.#userService.updateUserRole(userId, newRole);
+        if (userData) {
+          return res.send({ ok: true, result: userData });
+        }
+        return res.send({
+          ok: false,
+          error: '해당 사용자를 조회하지 못했습니다.',
+        });
+      } catch (error) {
+        console.log(error);
+        return res.send({
+          ok: false,
+          error: '예기치 못한 에러가 발생했습니다.',
+        });
       }
-    );
+    });
 
     this.#router.get('/:user_id', async (req, res) => {
       try {
@@ -149,7 +136,7 @@ export default class UsersController {
         });
       }
     });
-
-    return this.#router;
+*/
+    return this.router;
   }
 }
