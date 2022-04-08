@@ -1,10 +1,13 @@
 import AppDataSource from '../../db';
 import Lecture from '../entities/lecture.entity';
+import CompletionRecordsService from './completion-records.service';
 
 export default class LecturesService {
   #lectureRepository;
-  constructor(otherService) {
+  #completionRecordsService;
+  constructor() {
     this.#lectureRepository = AppDataSource.getRepository(Lecture);
+    this.#completionRecordsService = new CompletionRecordsService();
   }
 
   /**
@@ -77,8 +80,43 @@ export default class LecturesService {
       if (video_url) {
         // s3에서 데이터 삭제 요청
       }
-      await this.#lectureRepository.delete({ id, teacher_id });
+      await Promise.all([
+        this.#completionRecordsService.deleteCompletionRecordsByLectureId({
+          lecture_id: id,
+        }),
+        this.#lectureRepository.delete({ id, teacher_id }),
+      ]); // 해당 lecture와 CompletionRecord 모두 삭제
       return { id };
+    } catch {
+      return null;
+    }
+  }
+  /**
+   *
+   * @param chapter_id  chapter_id 기준으로 삭제
+   * @param teacher_id  권한 검증
+   * @returns id list | null
+   */
+  async deleteLecturesByChapterId({ chapter_id, teacher_id }) {
+    try {
+      const lectures = await this.#lectureRepository.find({
+        where: { chapter_id, teacher_id },
+        select: { id: true, video_url: true },
+      });
+
+      for (const { id, video_url } of lectures) {
+        if (video_url) {
+          // s3에서 데이터 삭제 요청
+        }
+        await Promise.all([
+          this.#completionRecordsService.deleteCompletionRecordsByLectureId({
+            lecture_id: id,
+          }),
+          this.#lectureRepository.delete({ id, teacher_id }),
+        ]);
+      }
+
+      return { lecture_ids: lectures.map((lecture) => lecture.id) };
     } catch {
       return null;
     }
