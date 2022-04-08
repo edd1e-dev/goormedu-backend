@@ -148,12 +148,19 @@ export default class CoursesService {
    * @param  data 변결할 데이터를 담은 객체, 빠진 데이터는 변경안함
    * @returns 성공시 corse, 실패시, null
    */
-  async updateCourse({ where: { id, teacher_id }, data }) {
+  async updateCourse({
+    where: { id, teacher_id },
+    data: { cover_image, ...rest },
+  }) {
     try {
       const course = await this.#courseRepository.findOneOrFail({
         where: { id, teacher_id },
       });
-      for (const [key, val] of Object.entries(data)) course[key] = val;
+      for (const [key, val] of Object.entries(rest)) course[key] = val;
+      if (cover_image) {
+        // s3에서 기존의 이미지를 제거 요청
+        course.cover_image = cover_image;
+      }
       const result = await this.#courseRepository.save(course);
       return result;
     } catch {
