@@ -1,6 +1,6 @@
 import AppDataSource from '../db';
 
-export default class OtherTmpService {
+export default class TmpService {
   // 다른 서비스에서 제공받을 임시 함수들
 
   // completionRecords에서
