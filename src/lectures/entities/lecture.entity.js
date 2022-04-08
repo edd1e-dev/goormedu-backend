@@ -1,51 +1,49 @@
 import { EntitySchema } from 'typeorm';
 
 const Lecture = new EntitySchema({
-  name: 'Lecture',
-  tableName: 'Lecture',
+  name: 'lecture',
+  tableName: 'lecture',
   columns: {
     id: {
       primary: true,
       type: 'int',
       generated: true,
     },
-
+    teacher_id: {
+      type: 'int',
+    },
     course_id: {
       type: 'int',
     },
-
     chapter_id: {
       type: 'int',
     },
-
     title: {
       type: 'text',
     },
-
     video_url: {
       type: 'text',
+      nullable: true,
     },
-
     content: {
       type: 'text',
-      nullable: true
+      nullable: true,
     },
-
     order: {
       type: 'int',
     },
-
     // can be bool
-    isPublic: {
+    is_public: {
       type: 'boolean',
+      default: false,
     },
-
-    createdAt: {
-      type: 'date',
+    created_at: {
+      type: 'timestamp',
+      createDate: true,
     },
-
-    updatedAt: {
-      type: 'date',
+    updated_at: {
+      type: 'timestamp',
+      updateDate: true,
     },
   },
 });
