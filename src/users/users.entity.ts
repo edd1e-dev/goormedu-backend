@@ -12,8 +12,8 @@ export default class User {
   @Column()
   username: string;
 
-  @Column()
-  avatar_url: string;
+  @Column({ nullable: true })
+  avatar_url?: string;
 
   @Column()
   sub: string;
