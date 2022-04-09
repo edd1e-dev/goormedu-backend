@@ -1,5 +1,10 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { UserRole } from './users.constant';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export default class User {
@@ -12,10 +17,7 @@ export default class User {
   @Column()
   username: string;
 
-  @Column({ nullable: true })
-  avatar_url?: string;
-
-  @Column()
+  @Column({ unique: true })
   sub: string;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.Student })

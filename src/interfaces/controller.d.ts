@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-interface Controller {
+interface IController {
   getRoute(): string;
   getRouter(): Router;
 }

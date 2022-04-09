@@ -1,142 +1,122 @@
-import express, { Router } from 'express';
-import passport from 'passport';
-import verifyUserRole from '../middleware/VerifyUserRole';
-import { UserRole } from './users.constant';
+import express, { Response, Router } from 'express';
+import CustomError from '@/commons/custom-error';
+import { IController } from '@/interfaces/controller';
+import { IUserDetail } from '@/interfaces/users';
+import jwtMiddleware from '@/middleware/jwt.middleware';
 import UsersService from './users.service';
-import jwt from 'jsonwebtoken';
-import { Controller } from '@/interfaces/controller';
+import JwtService from '@/jwt/jwt.service';
+import RoleGuard from '@/middleware/role-guard.middleware';
 
-export default class UsersController implements Controller {
-  private userService: Service;
+// class를 static으로 만들고 싶지만 지원하지 않는 것 같음
+// 외부 모듈로 부터 생성해서 대입하는 속성들은 객체 프로퍼티로 만들었음
+export default class UsersController implements IController {
+  private usersService: UsersService;
+  private jwtService: JwtService;
   private router: Router;
-  private route: string;
+  private static readonly route = '/users';
+  private static readonly userPublicSelect = {
+    id: true,
+    username: true,
+    role: true,
+  };
+  private static readonly userDetailSelect = {
+    id: true,
+    username: true,
+    role: true,
+    email: true,
+  };
 
   constructor() {
-    this.userService = new UsersService();
+    this.usersService = new UsersService();
+    this.jwtService = new JwtService();
     this.router = express.Router();
-    this.route = '/users';
   }
 
+  private async getApi(service: Function, res: Response) {
+    try {
+      const result: object | null = await service();
+      return res.send(
+        result
+          ? { ok: true, result }
+          : { ok: false, error: '요청 결과를 불러오지 못했습니다.' },
+      );
+    } catch (e) {
+      let error = '예기치 못한 요류가 발생하였습니다.';
+      if (e.name === CustomError.ErrorType) error = e.message;
+      return res.send({ ok: false, error });
+    }
+  }
   getRoute() {
-    return this.route;
+    return UsersController.route;
   }
-
   getRouter() {
-    /** 
-    this.#router.use(
-      passport.authenticate('jwt', { session: false, failWithError: true }),
-      handleAuthSuccess,
-      handleAuthFailure,
+    this.router.use(jwtMiddleware);
+
+    this.router.get('/profile', (req, res) =>
+      this.getApi(async () => {
+        const user = req.user as Express.User;
+        const result: IUserDetail = await this.usersService.findUserById({
+          id: user.id,
+          select: UsersController.userDetailSelect,
+        });
+        if (user.role !== result.role) {
+          const token = this.jwtService.sign({
+            id: user.id,
+            role: result.role,
+          });
+          res.cookie('jwt', token, { httpOnly: true });
+        }
+        return result;
+      }, res),
     );
 
-    this.#router.get('/profile', async (req, res) => {
-      try {
-        const userId = parseInt(req.user?.id ?? '0');
-        const userData = await this.#userService.findUserProfile(userId);
-        if (userData) {
-          if (userData.role !== req.user?.role) {
-            const id = user.id,
-              role = user.role;
-            const jwtPayload = { id, role };
-            const token = jwt.sign(jwtPayload, process.env.JWT_PRIVATEKEY);
-            res.cookie('jwt', token, { httpOnly: true });
+    this.router.get('/:user_id', (req, res) =>
+      this.getApi(
+        () =>
+          this.usersService.findUserById({
+            id: parseInt(req.params.user_id),
+            select: UsersController.userPublicSelect,
+          }),
+        res,
+      ),
+    );
+
+    this.router.post('/:user_id/delete', (req, res) =>
+      this.getApi(async () => {
+        const user = req.user as Express.User;
+        const id = parseInt(req.params.user_id);
+        if (user.role !== UserRole.Admin && user.id !== id) {
+          throw new CustomError('권한이 없습니다.'); // getApi에서 Error를 받음
+        }
+        await this.usersService.findUserById({
+          id,
+          select: { id: true },
+        }); // 사용자가 존재하지 않으면 커스텀 에러를 반환
+        return this.usersService.deleteUserById({ id });
+      }, res),
+    );
+
+    this.router.post(
+      '/:user_id/role/:role/update',
+      RoleGuard(UserRole.Admin),
+      (req, res) =>
+        this.getApi(async () => {
+          const { user_id, role } = req.params;
+
+          if (!(role in UserRole)) {
+            throw new CustomError('올바른 권한을 지정해주세요.');
           }
-          return res.send({ ok: true, result: userData });
-        } else {
-          return res.send({
-            ok: false,
-            error: '사용자 정보를 조회하지 못했습니다.',
+          const user = await this.usersService.updateUserById({
+            id: parseInt(user_id),
+            data: { role: UserRole[role] },
           });
-        }
-      } catch (error) {
-        console.log(error);
-        return res.send({
-          ok: false,
-          error: '예기치 못한 에러가 발생하였습니다.',
-        });
-      }
-    });
-
-    this.#router.get('/:user_id/delete', async (req, res) => {
-      try {
-        const ownProfile = req.user;
-        const userId = parseInt(req.params?.user_id ?? '0');
-        if (ownProfile.role !== UserRole.Admin && ownProfile.id !== userId) {
-          return res.send({
-            ok: false,
-            error: '해당 명령을 실행할 권한이 없습니다.',
-          });
-        }
-
-        let userData = await this.#userService.findUserById(userId);
-        if (!userData) {
-          return res.send({
-            ok: false,
-            error: '사용자 정보를 조회하지 못했습니다.',
-          });
-        }
-
-        userData = await this.#userService.deleteUserById(userId);
-        if (userData) {
-          return res.send({ ok: true, result: { userId } });
-        }
-        return null;
-      } catch (error) {
-        console.log(error);
-        return res.send({
-          ok: false,
-          error: '예기치 못한 에러가 발생하였습니다.',
-        });
-      }
-    });
-
-    this.#router.post('/:user_id/role/update', verifyUserRole(UserRole.Admin), async (req, res) => {
-      try {
-        const newRole = req.body?.role ?? UserRole.Teacher;
-        const userId = req.params?.user_id ?? '0';
-
-        if (newRole !== UserRole.Student && newRole !== UserRole.Teacher && newRole !== UserRole.Admin) {
-          return res.send({ ok: false, error: '존재하지 않는 권한입니다.' });
-        }
-
-        const userData = await this.#userService.updateUserRole(userId, newRole);
-        if (userData) {
-          return res.send({ ok: true, result: userData });
-        }
-        return res.send({
-          ok: false,
-          error: '해당 사용자를 조회하지 못했습니다.',
-        });
-      } catch (error) {
-        console.log(error);
-        return res.send({
-          ok: false,
-          error: '예기치 못한 에러가 발생했습니다.',
-        });
-      }
-    });
-
-    this.#router.get('/:user_id', async (req, res) => {
-      try {
-        const userId = parseInt(req.params?.user_id ?? '0');
-        const userData = await this.#userService.findUserById(userId);
-        if (userData) {
-          return res.send({ ok: true, result: userData });
-        } else {
-          return res.send({
-            ok: false,
-            error: '사용자 정보를 조회하지 못했습니다.',
-          });
-        }
-      } catch (error) {
-        console.log(error);
-        return res.send({
-          ok: false,
-          error: '예기치 못한 에러가 발생하였습니다.',
-        });
-      }
-    });
-*/
+          if (user) {
+            const { sub, ...result } = user; // sub 데이터는 전송 x
+            return result;
+          }
+          return null;
+        }, res),
+    );
     return this.router;
   }
 }

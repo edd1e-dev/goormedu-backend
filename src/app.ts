@@ -4,7 +4,7 @@ import passport from 'passport';
 import { urlencoded } from 'express';
 import helmet from 'helmet';
 import GoogleStrategy from './middleware/google.strategy';
-import JwtStrategy from '@/middleware/jwt.Strategy';
+import JwtStrategy from '@/jwt/jwt.strategy';
 import globalRouter from './globalRouter';
 
 const app = express();
@@ -22,7 +22,9 @@ app.use(
 passport.use(GoogleStrategy);
 passport.use(JwtStrategy);
 
-app.get('/jwt-fail', (req, res) => res.send({ ok: false, error: 'Jwt Not Authenticated' }));
+app.get('/jwt-fail', (req, res) =>
+  res.send({ ok: false, error: 'Jwt Not Authenticated' }),
+);
 
 app.use('/', globalRouter); // 모든 요청을 globalRouter로
 

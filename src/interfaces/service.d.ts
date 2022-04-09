@@ -1,1 +1,1 @@
-interface Service {}
+interface IService {}

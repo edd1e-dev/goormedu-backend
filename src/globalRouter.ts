@@ -1,9 +1,9 @@
 import express from 'express';
-import { Controller } from './interfaces/controller';
+import { IController } from './interfaces/controller';
 
 const globalRouter = express.Router();
 
-const controllers: Controller[] = [];
+const controllers: IController[] = [];
 
 for (const controller of controllers) {
   globalRouter.use(controller.getRoute(), controller.getRouter());
