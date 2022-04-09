@@ -6,6 +6,8 @@ import jwtMiddleware from '@/middleware/jwt.middleware';
 import UsersService from './users.service';
 import JwtService from '@/jwt/jwt.service';
 import RoleGuard from '@/middleware/role-guard.middleware';
+import { FindOptionsSelect } from 'typeorm';
+import User from './users.entity';
 
 // class를 static으로 만들고 싶지만 지원하지 않는 것 같음
 // 외부 모듈로 부터 생성해서 대입하는 속성들은 객체 프로퍼티로 만들었음
@@ -14,16 +16,18 @@ export default class UsersController implements IController {
   private jwtService: JwtService;
   private router: Router;
   private static readonly route = '/users';
-  private static readonly userPublicSelect = {
+  private static readonly userPublicSelect: FindOptionsSelect<User> = {
     id: true,
     username: true,
     role: true,
   };
-  private static readonly userDetailSelect = {
+  private static readonly userDetailSelect: FindOptionsSelect<User> = {
     id: true,
     username: true,
     role: true,
     email: true,
+    created_at: true,
+    updated_at: true,
   };
 
   constructor() {
@@ -110,11 +114,7 @@ export default class UsersController implements IController {
             id: parseInt(user_id),
             data: { role: UserRole[role] },
           });
-          if (user) {
-            const { sub, ...result } = user; // sub 데이터는 전송 x
-            return result;
-          }
-          return null;
+          return { id: user.id, role: user.role };
         }, res),
     );
     return this.router;
