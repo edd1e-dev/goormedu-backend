@@ -1,5 +1,5 @@
 import Chapter from './chapters.entity';
-import AppDataSource from '../db';
+import AppDataSource from '../commons/db';
 import Course from '../course/course.entity';
 
 export default class ChaptersService {

@@ -1,16 +1,17 @@
-import User from './users.entity';
-import AppDataSource from '@/db';
+import User from './user.entity';
+import AppDataSource from '@/commons/db';
 import { Repository } from 'typeorm';
-import CustomError from '@/commons/custom-error';
 import {
   FindUserByIdDTO,
   DeleteUserByIdDTO,
   UpdateUserByIdDTO,
   CreateUserDTO,
+  FindUserBySubDTO,
 } from './users.dto';
+import { CustomError } from '@/commons/interfaces';
 
 export default class UsersService {
-  private userRepository: Repository<User>;
+  private readonly userRepository: Repository<User>;
 
   constructor() {
     this.userRepository = AppDataSource.getRepository(User);
@@ -18,13 +19,13 @@ export default class UsersService {
 
   /**
    *
-   * @param CreateUserDTO 새로 생성할 사용자의 정보입니다.
+   * @param createUserDTO 새로 생성할 사용자의 정보입니다.
    * email, username, sub 데이터를 포함하고 있습니다.
    * @returns 생성된 사용자의 전체 정보를 반환합니다.
    */
-  async createUser({ email, username, sub }: CreateUserDTO) {
+  async createUser(createUserDTO: CreateUserDTO) {
     const result = await this.userRepository.save(
-      this.userRepository.create({ email, username, sub }),
+      this.userRepository.create(createUserDTO),
     );
     return result;
   }
@@ -40,6 +41,20 @@ export default class UsersService {
       ...(select && { select }),
     });
     if (!result) throw new CustomError('사용자가 존재하지 않습니다.');
+    return result;
+  }
+
+  /**
+   *
+   * @param FindUserBySubDTO sub 데이터로 사용자를 조회, rufrhk
+   * sub은 unique한 데이터로 절대 겹치는 경우가 없다.
+   * @returns 존재할 경우 해당 사용자의 정보를, 존재하지 않을 경우 null을 반환
+   */
+  async findUserBySub({ sub, select }: FindUserBySubDTO): Promise<User | null> {
+    const result = await this.userRepository.findOne({
+      where: { sub },
+      ...(select && { select }),
+    });
     return result;
   }
 

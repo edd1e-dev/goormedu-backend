@@ -1,6 +1,6 @@
-import env from './config';
-import app from './app';
-import AppDataSource from './db';
+import env from './commons/config';
+import app from './commons/app';
+import AppDataSource from './commons/db';
 
 AppDataSource.initialize()
   .then(() =>

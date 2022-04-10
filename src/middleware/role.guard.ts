@@ -1,3 +1,4 @@
+import { UserRole } from '@/commons/interfaces';
 import { NextFunction, Request, Response } from 'express';
 
 const RoleGuard = (...roles: UserRole[]) => {

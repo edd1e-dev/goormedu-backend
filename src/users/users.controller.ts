@@ -1,21 +1,28 @@
+import { UpdateRoleData } from './users.dto';
 import express, { Response, Router } from 'express';
-import CustomError from '@/commons/custom-error';
-import { IController } from '@/interfaces/controller';
-import { IUserDetail } from '@/interfaces/users';
-import jwtMiddleware from '@/middleware/jwt.middleware';
 import UsersService from './users.service';
 import JwtService from '@/jwt/jwt.service';
-import RoleGuard from '@/middleware/role-guard.middleware';
+import RoleGuard from '@/middleware/role.guard';
 import { FindOptionsSelect } from 'typeorm';
-import User from './users.entity';
+import User from './user.entity';
+import JwtGuard from '@/middleware/jwt.guard';
+import {
+  IController,
+  IUserDetail,
+  UserRole,
+  CustomError,
+} from '@/commons/interfaces';
+import { validate, validateOrReject } from 'class-validator';
+import { JwtPayload } from '@/jwt/jwt.dto';
 
 // class를 static으로 만들고 싶지만 지원하지 않는 것 같음
 // 외부 모듈로 부터 생성해서 대입하는 속성들은 객체 프로퍼티로 만들었음
 export default class UsersController implements IController {
-  private usersService: UsersService;
-  private jwtService: JwtService;
-  private router: Router;
-  private static readonly route = '/users';
+  // readonly 속성은 생성된 후에는 변경 불가
+  public readonly route: string;
+  private readonly usersService: UsersService;
+  private readonly jwtService: JwtService;
+  private readonly router: Router;
   private static readonly userPublicSelect: FindOptionsSelect<User> = {
     id: true,
     username: true,
@@ -34,6 +41,7 @@ export default class UsersController implements IController {
     this.usersService = new UsersService();
     this.jwtService = new JwtService();
     this.router = express.Router();
+    this.route = '/users';
   }
 
   private async getApi(service: Function, res: Response) {
@@ -45,30 +53,30 @@ export default class UsersController implements IController {
           : { ok: false, error: '요청 결과를 불러오지 못했습니다.' },
       );
     } catch (e) {
-      let error = '예기치 못한 요류가 발생하였습니다.';
+      let error = CustomError.UnExpectedErrorMessage;
       if (e.name === CustomError.ErrorType) error = e.message;
       return res.send({ ok: false, error });
     }
   }
-  getRoute() {
-    return UsersController.route;
-  }
+
   getRouter() {
-    this.router.use(jwtMiddleware);
+    this.router.use(JwtGuard);
 
     this.router.get('/profile', (req, res) =>
       this.getApi(async () => {
-        const user = req.user as Express.User;
+        const user = new JwtPayload(req.user as Express.User);
+        await validateOrReject(user, { whitelist: true });
+
         const result: IUserDetail = await this.usersService.findUserById({
           id: user.id,
           select: UsersController.userDetailSelect,
         });
         if (user.role !== result.role) {
-          const token = this.jwtService.sign({
+          const token = await this.jwtService.sign({
             id: user.id,
             role: result.role,
           });
-          res.cookie('jwt', token, { httpOnly: true });
+          res.cookie('jwt', token, JwtService.jwtCookieOptions);
         }
         return result;
       }, res),
@@ -87,7 +95,9 @@ export default class UsersController implements IController {
 
     this.router.post('/:user_id/delete', (req, res) =>
       this.getApi(async () => {
-        const user = req.user as Express.User;
+        const user = new JwtPayload(req.user as Express.User);
+        await validateOrReject(user, { whitelist: true });
+
         const id = parseInt(req.params.user_id);
         if (user.role !== UserRole.Admin && user.id !== id) {
           throw new CustomError('권한이 없습니다.'); // getApi에서 Error를 받음
@@ -105,14 +115,17 @@ export default class UsersController implements IController {
       RoleGuard(UserRole.Admin),
       (req, res) =>
         this.getApi(async () => {
-          const { user_id, role } = req.params;
+          const user_id = req.params.user_id;
+          const role = req.params.role as UserRole;
 
-          if (!(role in UserRole)) {
-            throw new CustomError('올바른 권한을 지정해주세요.');
+          const data = new UpdateRoleData({ role });
+          const errors = await validate(data, { whitelist: true });
+          if (errors.length > 0) {
+            throw new CustomError('올바른 권한을 입력해주세요.');
           }
           const user = await this.usersService.updateUserById({
             id: parseInt(user_id),
-            data: { role: UserRole[role] },
+            data,
           });
           return { id: user.id, role: user.role };
         }, res),

@@ -1,11 +1,13 @@
 import 'dotenv/config';
 import joi from 'joi';
+import { IEnv } from './interfaces';
 
 const envVarsSchema = joi
-  .object()
+  .object<IEnv>()
   .keys({
     PORT: joi.number().default(4000),
     DOMAIN: joi.string().required(),
+    CLIENT_DOMAIN: joi.string().required(),
 
     GOOGLE_CLIENT_ID: joi.string().required(),
     GOOGLE_SECRET: joi.string().required(),
@@ -20,11 +22,20 @@ const envVarsSchema = joi
   })
   .unknown();
 
-const { value: env, error } = envVarsSchema
+const { value, error } = envVarsSchema
   .prefs({ errors: { label: 'key' } })
   .validate(process.env);
 
-if (error) {
-  throw new Error(`Config validation error: ${error.message}`);
+function env(
+  value: IEnv | undefined,
+  error: joi.ValidationError | undefined,
+): IEnv {
+  if (error) {
+    throw new Error(`Config validation error: ${error.message}`);
+  } else if (value === undefined) {
+    throw Error('env is not found, please check src/config.ts');
+  } else {
+    return value;
+  }
 }
-export default env;
+export default env(value, error);

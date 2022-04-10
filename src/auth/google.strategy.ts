@@ -1,6 +1,6 @@
-import env from '@/config';
+import { CreateUserDTO } from '@/users/users.dto';
+import env from '@/commons/config';
 import { Strategy } from 'passport-google-oauth2';
-//import 'dotenv/config';
 /*  
 sub: 토큰 제목 (subject)
 
@@ -16,9 +16,12 @@ const GoogleStrategy = new Strategy(
     scope: ['profile', 'email'],
   },
   (_, __, profile, done) => {
-    const { sub: _sub, email, picture, displayName } = profile;
-    const sub = _sub + '';
-    return done(null, { sub, email, picture, displayName });
+    const { sub, email, displayName } = profile;
+    return done(null, {
+      sub: sub + '',
+      email,
+      username: displayName,
+    });
   },
 );
 

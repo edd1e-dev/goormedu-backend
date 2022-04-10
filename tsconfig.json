@@ -18,7 +18,6 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "allowJs": true,
-    "typeRoots": ["src/interfaces"],
     "baseUrl": "./",
     "paths": {
       "@/*":["src/*"]
