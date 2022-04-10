@@ -26,7 +26,7 @@ export default class LearnRecordsService implements IService {
       ...(select && { select }),
     });
     if (!result) {
-      throw new CustomError('기록이 존재하지 않습니다.');
+      throw new CustomError('수강 기록이 존재하지 않습니다.');
     }
     return result;
   }
@@ -53,7 +53,7 @@ export default class LearnRecordsService implements IService {
     data,
   }: UpdateLearnRecordDTO): Promise<LearnRecord> {
     const learnRecord = await this.learnRecordRepository.findOne({ where });
-    if (!learnRecord) throw new CustomError('기록이 존재하지 않습니다.');
+    if (!learnRecord) throw new CustomError('수강 기록이 존재하지 않습니다.');
     for (const [key, val] of Object.entries(data)) learnRecord[key] = val;
     const result = await this.learnRecordRepository.save(learnRecord);
     return result;

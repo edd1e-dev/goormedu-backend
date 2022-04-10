@@ -6,6 +6,7 @@ import TeacherRecord from '@/teacher-records/teacher-record.entity';
 import Course from '@/courses/entities/course.entity';
 import LearnRecord from '@/courses/entities/learn-record.entity';
 import Chapter from '@/courses/entities/chapter.entity';
+import Lecture from '@/courses/entities/lecture.entity';
 
 const AppDataSource = new DataSource({
   type: 'mysql',
@@ -17,7 +18,15 @@ const AppDataSource = new DataSource({
   synchronize: true, // true 일 시 테이블 이미 존재한다고 뜰 수 있음. dropSchema: true 필요
   dropSchema: false, // true 일 시 Schema 매번 drop 시킴. 주의!!
   logging: false,
-  entities: [User, Category, TeacherRecord, Course, LearnRecord, Chapter],
+  entities: [
+    User,
+    Category,
+    TeacherRecord,
+    Course,
+    LearnRecord,
+    Chapter,
+    Lecture,
+  ],
   subscribers: [],
   migrations: [],
 });

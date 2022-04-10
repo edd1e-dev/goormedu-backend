@@ -12,7 +12,4 @@ export default class TmpService implements IService {
     return 0;
     // LearnRecord갯수 반환
   }
-
-  // Lecture Service
-  async deleteLectures(where: { course_id: number; teacher_id: number }) {}
 }

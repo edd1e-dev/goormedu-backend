@@ -1,5 +1,5 @@
 import CoreEntity from '@/commons/core.entity';
-import { IsNumber, IsDate, IsOptional } from 'class-validator';
+import { IsBoolean, IsNumber, IsString, IsDate, IsUrl } from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -9,37 +9,46 @@ import {
 } from 'typeorm';
 
 @Entity()
-export default class LearnRecord extends CoreEntity {
+export default class Lecture extends CoreEntity {
   @PrimaryGeneratedColumn()
   @IsNumber()
   id: number;
 
   @Column()
   @IsNumber()
-  student_id: number;
+  teacher_id: number;
 
   @Column()
   @IsNumber()
   course_id: number;
 
-  @Column({ nullable: true })
-  @IsDate()
-  @IsOptional()
-  last_learning_date?: Date;
+  @Column()
+  @IsNumber()
+  chapter_id: number;
+
+  @Column()
+  @IsString()
+  title: string;
 
   @Column({ nullable: true })
-  @IsNumber()
-  @IsOptional()
-  last_lecture_id?: number;
+  @IsUrl()
+  video_url: string;
 
   @Column({ nullable: true })
+  @IsString()
+  content: string;
+
+  @Column()
   @IsNumber()
-  @IsOptional()
-  next_lecture_id?: number;
+  order: number;
+
+  @Column({ default: false })
+  @IsBoolean()
+  is_public: boolean;
 
   @CreateDateColumn()
   @IsDate()
-  created_at: Date;
+  create_at: Date;
 
   @UpdateDateColumn()
   @IsDate()
