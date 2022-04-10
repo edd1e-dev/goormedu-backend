@@ -6,8 +6,8 @@ import {
   FindCoursesByIdsDTO,
   FindCoursesByQueryDTO,
   FindCoursesByTeacherIdDTO,
-} from '@/courses/courses.dto';
-import { CreateCourseDTO, UpdateCourseDTO } from '@/courses/courses.dto';
+} from '@/courses/dtos/courses.dto';
+import { CreateCourseDTO, UpdateCourseDTO } from '@/courses/dtos/courses.dto';
 import { Repository, ILike, In } from 'typeorm';
 import { CustomError, IService } from '@/commons/interfaces';
 import Course from '@/courses/entities/course.entity';
@@ -104,19 +104,15 @@ export default class CoursesService implements IService {
     const result = await this.courseRepository.save(course);
     return result;
   }
-  async deleteCourse({
-    id,
-    teacher_id,
-  }: DeleteCourseDTO): Promise<{ id: number }> {
-    const course = await this.courseRepository.findOne({
-      where: { id, teacher_id },
-    });
+  async deleteCourse(where: DeleteCourseDTO): Promise<DeleteCourseDTO> {
+    const course = await this.courseRepository.findOne({ where });
+
     if (!course) {
       throw new CustomError('코스가 존재하지 않습니다.');
     }
     // s3 에서 course.cover_image 삭제 ??
     course.teacher_id = 0;
     await this.courseRepository.save(course);
-    return { id };
+    return where;
   }
 }

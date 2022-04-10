@@ -6,7 +6,7 @@ const RoleGuard = (...roles: UserRole[]) => {
     if (req.user && roles.includes(req.user.role)) {
       next();
     } else {
-      return res.send({ ok: false, error: '권한이 없습니다.' });
+      return res.send({ ok: false, error: '계정 권한이 없습니다.' });
     }
   };
 };

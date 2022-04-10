@@ -53,7 +53,7 @@ export interface IService {}
 
 export class CustomError extends Error {
   static readonly ErrorType = 'CustomError';
-  static readonly UnExpectedErrorMessage = '예기치 않은 오류가 발생했습니다.';
+  static readonly UnExpectedErrorMessage = '예기치 못한 오류가 발생했습니다.';
 
   constructor(message: string = '') {
     super(message);

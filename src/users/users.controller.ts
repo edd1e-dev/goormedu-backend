@@ -106,6 +106,10 @@ export default class UsersController implements IController {
           id,
           select: { id: true },
         }); // 사용자가 존재하지 않으면 커스텀 에러를 반환
+
+        // 사용자과 관련된 수강기록, 이수기록, 교육자 신청 기록 삭제.
+        // 코스는 삭제 x
+
         return this.usersService.deleteUserById({ id });
       }, res),
     );

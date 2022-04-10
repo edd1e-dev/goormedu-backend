@@ -8,7 +8,7 @@ import {
   Min,
 } from 'class-validator';
 import { FindOptionsSelect } from 'typeorm';
-import Course from './entities/course.entity';
+import Course from '../entities/course.entity';
 
 export class CreateCourseData {
   constructor({

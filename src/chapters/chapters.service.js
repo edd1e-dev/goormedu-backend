@@ -12,47 +12,6 @@ export default class ChaptersService {
   }
 
   /**
-   * @param {*} courseId 코스 번호
-   * @returns 성공 시 Course Entity 실패 시 null
-   */
-  async findCourseByCourseId(courseId) {
-    try {
-      const id = courseId;
-      const courseData = await this.#courseRepository.findOneBy({ id });
-
-      if (courseData) {
-        return courseData;
-      }
-      return null;
-    } catch (error) {
-      console.log(error);
-      return null;
-    }
-  }
-
-  /**
-   * @param {*} select Category 조회 결과 형식
-   * @returns 성공 시 Chapters Entity 실패 시 null
-   */
-  async findChaptersByCourseId(where, select) {
-    try {
-      const chapterData = await this.#chapterRepository.find({
-        where: { course_id: where },
-        select,
-      });
-      if (chapterData) {
-        for (const [_, chapter] of Object.entries(chapterData)) {
-          chapter.lectures = [];
-        }
-      }
-      return chapterData;
-    } catch (error) {
-      console.log(error);
-      return null;
-    }
-  }
-
-  /**
    * @param chapterData Chapter Entity
    * @param where 코스 번호
    * @returns 성공 시 Chapter Entity + Lecture Entity 실패 시 null

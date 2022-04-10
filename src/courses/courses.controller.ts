@@ -1,4 +1,4 @@
-import { CreateCourseData, UpdateCourseData } from './courses.dto';
+import { CreateCourseData, UpdateCourseData } from './dtos/courses.dto';
 import JwtGuard from '@/middleware/jwt.guard';
 import { FindOptionsSelect } from 'typeorm';
 import express, { Response, Router } from 'express';
@@ -9,11 +9,18 @@ import RoleGuard from '@/middleware/role.guard';
 import TmpService from './services/temp.service';
 import { JwtPayload } from '@/jwt/jwt.dto';
 import { validate, validateOrReject } from 'class-validator';
+import LearnRecordsService from './services/learn-records.service';
+import ChaptersService from './services/chapters.service';
+import LearnRecord from './entities/learn-record.entity';
+import Chapter from './entities/chapter.entity';
+import { CreateChapterData, UpdateChapterData } from './dtos/chapters.dto';
 
 export default class CoursesController implements IController {
   public readonly route: string;
   private readonly router: Router;
   private readonly coursesService: CoursesService;
+  private readonly learnRecordsService: LearnRecordsService;
+  private readonly chaptersService: ChaptersService;
   private readonly tmpService: TmpService;
 
   private static readonly courseSelect: FindOptionsSelect<Course> = {
@@ -25,9 +32,27 @@ export default class CoursesController implements IController {
     description: true,
     level: true,
   };
+  private static readonly learnRecordSelect: FindOptionsSelect<LearnRecord> = {
+    id: true,
+    course_id: true,
+    student_id: true,
+    last_learning_date: true,
+    last_lecture_id: true,
+    next_lecture_id: true,
+  };
+
+  private static readonly chapterSelect: FindOptionsSelect<Chapter> = {
+    id: true,
+    title: true,
+    course_id: true,
+    teacher_id: true,
+    order: true,
+  };
 
   constructor() {
     this.coursesService = new CoursesService();
+    this.learnRecordsService = new LearnRecordsService();
+    this.chaptersService = new ChaptersService();
     this.tmpService = new TmpService();
     this.route = '/courses';
     this.router = express.Router();
@@ -68,12 +93,14 @@ export default class CoursesController implements IController {
       ),
     );
     this.router.get('/category/:category_id', (req, res) =>
-      this.getApi(() => {
-        this.coursesService.findCoursesByCategoryId({
-          category_id: parseInt(req.params.category_id),
-          select: CoursesController.courseSelect,
-        });
-      }, res),
+      this.getApi(
+        () =>
+          this.coursesService.findCoursesByCategoryId({
+            category_id: parseInt(req.params.category_id),
+            select: CoursesController.courseSelect,
+          }),
+        res,
+      ),
     );
 
     this.router.get('/learning-list', JwtGuard, (req, res) =>
@@ -81,7 +108,7 @@ export default class CoursesController implements IController {
         const user = new JwtPayload(req.user as Express.User);
         await validateOrReject(user, { whitelist: true });
 
-        const ids = await this.tmpService.findCourseIdsByStudentId({
+        const ids = await this.learnRecordsService.findCourseIdsByStudentId({
           student_id: user.id,
         });
 
@@ -170,15 +197,16 @@ export default class CoursesController implements IController {
         this.getApi(async () => {
           const user = new JwtPayload(req.user as Express.User);
           await validateOrReject(user, { whitelist: true });
-
           const course_id = parseInt(req.params.course_id);
 
-          await this.tmpService.deleteChapters({
-            where: { course_id, teacher_id: user.id },
+          await this.tmpService.deleteLectures({
+            course_id,
+            teacher_id: user.id,
           });
 
-          await this.tmpService.deleteLectures({
-            where: { course_id, teacher_id: user.id },
+          await this.chaptersService.deleteChapters({
+            course_id,
+            teacher_id: user.id,
           });
 
           const result = await this.coursesService.deleteCourse({
@@ -200,21 +228,39 @@ export default class CoursesController implements IController {
       ),
     );
 
+    this.router.get('/:course_id/chapters', (req, res) =>
+      this.getApi(
+        () =>
+          this.chaptersService.findChaptersByCourseId({
+            course_id: parseInt(req.params.course_id),
+            select: CoursesController.chapterSelect,
+          }),
+        res,
+      ),
+    ); // 챕터 목록 조회, 강의 정보 포함 x, Chapter[]
+
+    this.router.get('/:course_id/chapters/:chapter_id/lectures', (req, res) =>
+      this.getApi(() => {}, res),
+    ); // 챕터 내 강의 정보를 확인하기 위한 간단한 정보, public, Lecture[]
+
     this.router.use(JwtGuard);
+    this.router.get('/:course_id/lectures/:lecture_id/completion-record'); // 해당 강의 이수 여부 확인
+    this.router.get('/:course_id/lectures/:lecture_id/detail'); // 강의 이수를 위한 상세 정보 불러오기, learnRecord 존재시 허용, 혹은 본인이 teacher_id와 같은 경우
+
     this.router.get('/:course_id/learn-record', (req, res) =>
       this.getApi(async () => {
         const user = new JwtPayload(req.user as Express.User);
         await validateOrReject(user, { whitelist: true });
 
         const [learnRecord, count_complete_record] = await Promise.all([
-          this.tmpService.findLearnRecord({
+          this.learnRecordsService.findLearnRecord({
             where: {
               student_id: user.id,
               course_id: parseInt(req.params.course_id),
             },
-            select: {},
+            select: CoursesController.learnRecordSelect,
           }),
-          this.tmpService.countCompleteRecord({
+          this.tmpService.countCompletionRecord({
             student_id: user.id,
             course_id: parseInt(req.params.course_id),
           }),
@@ -227,7 +273,7 @@ export default class CoursesController implements IController {
         const user = new JwtPayload(req.user as Express.User);
         await validateOrReject(user, { whitelist: true });
 
-        const result = await this.tmpService.createLearnRecord({
+        const result = await this.learnRecordsService.createLearnRecord({
           student_id: user.id,
           course_id: parseInt(req.params.course_id),
         });
@@ -235,6 +281,70 @@ export default class CoursesController implements IController {
         return result;
       }, res),
     );
+
+    this.router.use(RoleGuard(UserRole.Teacher));
+
+    this.router.post('/:course_id/chapters/create', (req, res) =>
+      this.getApi(async () => {
+        const user = new JwtPayload(req.user as Express.User);
+        await validateOrReject(user, { whitelist: true });
+
+        const data = new CreateChapterData(req.body);
+        const errors = await validate(data, { whitelist: true });
+        if (errors.length > 0) {
+          throw new CustomError('잘못된 값이 입력되었습니다.');
+        }
+        const result = await this.chaptersService.createChapter({
+          where: {
+            teacher_id: user.id,
+            course_id: parseInt(req.params.course_id),
+          },
+          data,
+        });
+        return result;
+      }, res),
+    );
+    this.router.post('/:course_id/chapters/:chapter_id/update', (req, res) =>
+      this.getApi(async () => {
+        const user = new JwtPayload(req.user as Express.User);
+        await validateOrReject(user, { whitelist: true });
+
+        const data = new UpdateChapterData(req.body);
+        const errors = await validate(data, { whitelist: true });
+        if (errors.length > 0) {
+          throw new CustomError('잘못된 값이 입력되었습니다.');
+        }
+
+        const result = await this.chaptersService.updateChapter({
+          where: {
+            id: parseInt(req.params.chapter_id),
+            teacher_id: user.id,
+          },
+          data,
+        });
+        return result;
+      }, res),
+    );
+    this.router.post('/:course_id/chapters/:chapter_id/delete', (req, res) =>
+      this.getApi(async () => {
+        const user = new JwtPayload(req.user as Express.User);
+        await validateOrReject(user, { whitelist: true });
+
+        const result = await this.chaptersService.deleteChapter({
+          id: parseInt(req.params.chapter_id),
+          teacher_id: user.id,
+        });
+        return result;
+      }, res),
+    );
+    // 포함된 강의또한 제거한다. 따라서 내부 강의가 다른 챕터로 이동할 경우를 대비해
+    // 프론트측에서 delete작업은 모든 수정, 생성 작업이 완료된 후 실행하도록 약속한다.
+    // 혹은 포함된 작업을 제거하지 않도록 수정후 챕터와의 연결성을 잃은 강의들을 처리할 방법을 생각해야함
+
+    this.router.post('/:course_id/lectures/create');
+    this.router.post('/:course_id/lectures/:lecture_id/update');
+    this.router.post('/:course_id/lectures/:lecture_id/delete');
+
     return this.router;
   }
 }
