@@ -1,7 +1,5 @@
-import env from '@/commons/config';
 import express, { Request, Response, Router } from 'express';
 import { IController } from '@/commons/interfaces';
-import { DeleteFileDTO, UploadFileDTO } from './upload.dto';
 import {
   SingleCoverImageMiddleware,
   SingleLectureVideoMiddleware,
@@ -56,16 +54,20 @@ export default class UploadController implements IController {
     this.router.post(
       '/cover-image/create',
       SingleCoverImageMiddleware,
-      this.upload,
+      (req, res) => this.upload(req, res),
     );
-    this.router.post('/cover-image/delete', this.delete);
+    this.router.post('/cover-image/delete', (req, res) =>
+      this.delete(req, res),
+    );
 
     this.router.post(
       '/lecture-video/create',
       SingleLectureVideoMiddleware,
-      this.upload,
+      (req, res) => this.upload(req, res),
     );
-    this.router.post('/lecture-video/delete', this.delete);
+    this.router.post('/lecture-video/delete', (req, res) =>
+      this.delete(req, res),
+    );
 
     return this.router;
   }
