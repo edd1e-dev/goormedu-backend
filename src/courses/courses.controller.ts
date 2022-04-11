@@ -305,7 +305,7 @@ export default class CoursesController implements IController {
         const user = new JwtPayload(req.user as Express.User);
         await validateOrReject(user, { whitelist: true });
 
-        const [learnRecord, count_complete_record] = await Promise.all([
+        const [learnRecord, count_completion_record] = await Promise.all([
           this.learnRecordsService.findLearnRecord({
             where: {
               student_id: user.id,
@@ -318,7 +318,7 @@ export default class CoursesController implements IController {
             course_id: parseInt(req.params.course_id),
           }),
         ]);
-        return { ...learnRecord, count_complete_record };
+        return { ...learnRecord, count_completion_record };
       }, res),
     ); // 수강 기록
     this.router.post('/:course_id/learn', (req, res) =>
