@@ -181,8 +181,19 @@ export default class CoursesController implements IController {
           const user = new JwtPayload(req.user as Express.User);
           await validateOrReject(user, { whitelist: true });
 
+          const course_id = parseInt(req.params.course_id);
+
+          const { teacher_id } = await this.coursesService.findCourseById({
+            id: course_id,
+            select: { teacher_id: true },
+          });
+
+          if (teacher_id !== user.id) {
+            throw new CustomError('코스 변경 권한이 없습니다.');
+          }
+
           // s3로부터 cover_image url을 받아오는 과정
-          // 이전 데이터를 지우는 과정은 update 서비스 내부에서?
+          // 이전 데이터를 지우는 과정은 update 서비스 내부에서
           const cover_image = ''; // s3 url
 
           const data = new UpdateCourseData({
@@ -195,7 +206,7 @@ export default class CoursesController implements IController {
           }
 
           const result = await this.coursesService.updateCourse({
-            where: { id: parseInt(req.params.course_id), teacher_id: user.id },
+            where: { id: course_id, teacher_id },
             data,
           });
           return result;
