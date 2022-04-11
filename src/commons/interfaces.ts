@@ -17,6 +17,11 @@ export interface IEnv {
   DB_USERNAME: string;
   DB_PASSWORD: string;
   DB_DATABASE: string;
+
+  AWS_REGION: string;
+  AWS_S3: string;
+  AWS_CLIENT_ID: string;
+  AWS_SECRET: string;
 }
 
 export enum UserRole {
