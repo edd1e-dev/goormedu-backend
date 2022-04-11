@@ -4,49 +4,40 @@ import {
   DeleteObjectCommandOutput,
   PutObjectCommandOutput,
   S3,
-  S3ClientConfig,
 } from '@aws-sdk/client-s3';
 import env from '@/commons/config';
 
 export default class UploadService implements IService {
-  private readonly options: S3ClientConfig;
+  private readonly s3: S3;
   constructor() {
-    this.options = {
+    this.s3 = new S3({
       region: env.AWS_REGION,
       credentials: {
         accessKeyId: env.AWS_CLIENT_ID,
         secretAccessKey: env.AWS_SECRET,
       },
-    };
+    });
   }
 
-  getTest() {
-    return '';
-  }
-  /** 
   async uploadFile({
     username,
     file,
   }: UploadFileDTO): Promise<PutObjectCommandOutput> {
-    const s3 = new S3(this.options);
-    const data = await s3.putObject({
+    const result = await this.s3.putObject({
       Bucket: env.AWS_S3,
       Key: `${file.fieldname}/${username}/${Date.now()}`,
       ACL: 'public-read',
       ContentType: file.mimetype,
       Body: file.buffer,
     });
-    return data;
+    return result;
   }
 
-  async deleteFile({
-    key: Key,
-  }: DeleteFileDTO): Promise<DeleteObjectCommandOutput> {
-    const s3 = new S3(this.options);
-    const result = await s3.deleteObject({
+  async deleteFile({ key }: DeleteFileDTO): Promise<DeleteObjectCommandOutput> {
+    const result = await this.s3.deleteObject({
       Bucket: env.AWS_S3,
-      Key,
+      Key: key,
     });
     return result;
-  }*/
+  }
 }
