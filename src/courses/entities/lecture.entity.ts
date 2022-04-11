@@ -57,7 +57,7 @@ export default class Lecture extends CoreEntity {
 
   @CreateDateColumn()
   @IsDate()
-  create_at: Date;
+  created_at: Date;
 
   @UpdateDateColumn()
   @IsDate()
