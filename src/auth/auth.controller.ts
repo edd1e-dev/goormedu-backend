@@ -58,7 +58,6 @@ export default class AuthController implements IController {
             payload = { id: newUser.id, role: newUser.role };
           }
           const token = await this.jwtService.sign(payload);
-
           return res
             .cookie('jwt', token, JwtService.jwtCookieOptions)
             .redirect(env.CLIENT_DOMAIN);

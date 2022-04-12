@@ -1,5 +1,6 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import env from '@/commons/config';
 import passport from 'passport';
 import { urlencoded } from 'express';
 import helmet from 'helmet';
@@ -25,7 +26,7 @@ passport.use(JwtStrategy);
 
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: env.CLIENT_DOMAIN,
     credentials: true,
   }),
 );
