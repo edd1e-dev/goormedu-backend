@@ -12,6 +12,14 @@ export class DeleteLecturesDTO {
   teacher_id: number;
 }
 
+export class FindTempLecturesByCourseIdDTO {
+  where: {
+    course_id: number;
+    teacher_id: number;
+  };
+  select?: FindOptionsSelect<Lecture>;
+}
+
 export class FindLecturesByChapterIdDTO {
   chapter_id: number;
   select?: FindOptionsSelect<Lecture>;
@@ -90,6 +98,11 @@ export class UpdateLectureData {
 export class UpdateLectureDTO {
   where: { id: number; teacher_id: number; course_id: number };
   data: UpdateLectureData;
+}
+
+export class UpdateChapterlessLecutreDTO {
+  chapter_id: number;
+  teacher_id: number;
 }
 
 export class DeleteLectureDTO {

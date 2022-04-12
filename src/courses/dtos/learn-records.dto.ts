@@ -51,3 +51,6 @@ export class DeleteLearnRecordDTO {
     course_id: number;
   };
 }
+export class DeleteLearnRecordByStudentIdDTO {
+  student_id: number;
+}

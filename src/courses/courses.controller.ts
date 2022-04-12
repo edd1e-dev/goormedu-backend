@@ -326,6 +326,20 @@ export default class CoursesController implements IController {
 
     this.router.use(RoleGuard(UserRole.Teacher));
 
+    this.router.get('/:course_id/lectures/temp', (req, res) =>
+      this.getApi(async () => {
+        const user = new JwtPayload(req.user as Express.User);
+        await validateOrReject(user, { whitelist: true });
+        const course_id = parseInt(req.params.course_id);
+
+        const result = await this.lecturesService.findTempLecturesByCourseId({
+          where: { course_id, teacher_id: user.id },
+          select: CoursesController.lectureSelect,
+        });
+        return result;
+      }, res),
+    );
+
     this.router.post('/:course_id/chapters/create', (req, res) =>
       this.getApi(async () => {
         const user = new JwtPayload(req.user as Express.User);
@@ -376,14 +390,25 @@ export default class CoursesController implements IController {
     );
     this.router.post('/:course_id/chapters/:chapter_id/delete', (req, res) =>
       this.getApi(async () => {
+        const id = parseInt(req.params.chapter_id);
         const user = new JwtPayload(req.user as Express.User);
         await validateOrReject(user, { whitelist: true });
 
-        const result = await this.chaptersService.deleteChapter({
-          id: parseInt(req.params.chapter_id),
+        const deleteResult = await this.chaptersService.deleteChapter({
+          id,
           teacher_id: user.id,
         });
-        return result;
+
+        const updateResult = await this.lecturesService.updateChapterlessLectures({
+          chapter_id: id,
+          teacher_id: user.id,
+        });
+
+        if (!updateResult) {
+          return null;
+        }
+        
+        return deleteResult;
       }, res),
     );
     // 포함된 강의또한 제거한다. 따라서 내부 강의가 다른 챕터로 이동할 경우를 대비해

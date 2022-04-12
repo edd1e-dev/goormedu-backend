@@ -11,7 +11,7 @@ import {
 import { JwtPayload } from '@/jwt/jwt.dto';
 import { validate, validateOrReject } from 'class-validator';
 
-export default class TeacherRecorsController implements IController {
+export default class TeacherRecordsController implements IController {
   public readonly route: string;
   private readonly router: Router;
   private readonly teacherRecordsService: TeacherRecordsService;

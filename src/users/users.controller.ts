@@ -14,6 +14,8 @@ import {
 } from '@/commons/interfaces';
 import { validate, validateOrReject } from 'class-validator';
 import { JwtPayload } from '@/jwt/jwt.dto';
+import LearnRecordsService from '@/courses/services/learn-records.service';
+import TeacherRecordsService from '@/teacher-records/teacher-records.service';
 
 // class를 static으로 만들고 싶지만 지원하지 않는 것 같음
 // 외부 모듈로 부터 생성해서 대입하는 속성들은 객체 프로퍼티로 만들었음
@@ -21,6 +23,9 @@ export default class UsersController implements IController {
   // readonly 속성은 생성된 후에는 변경 불가
   public readonly route: string;
   private readonly usersService: UsersService;
+  private readonly learnRecordsService: LearnRecordsService;
+  private readonly teacherRecordsService: TeacherRecordsService;
+  // private readonly completionRecordsService: CompletionRecordsService;
   private readonly jwtService: JwtService;
   private readonly router: Router;
   private static readonly userPublicSelect: FindOptionsSelect<User> = {
@@ -39,6 +44,9 @@ export default class UsersController implements IController {
 
   constructor() {
     this.usersService = new UsersService();
+    this.learnRecordsService = new LearnRecordsService();
+    // this.completionRecordsService = new CompletionRecordsService();
+    this.teacherRecordsService = new TeacherRecordsService();
     this.jwtService = new JwtService();
     this.router = express.Router();
     this.route = '/users';
@@ -107,8 +115,12 @@ export default class UsersController implements IController {
           select: { id: true },
         }); // 사용자가 존재하지 않으면 커스텀 에러를 반환
 
-        // 사용자과 관련된 수강기록, 이수기록, 교육자 신청 기록 삭제.
+        
+        // 사용자와 관련된 수강기록, 이수기록, 교육자 신청 기록 삭제.
         // 코스는 삭제 x
+        this.learnRecordsService.deleteLearnRecordByStudentId({ student_id: id });
+        // this.completionRecordsService.delete
+        this.teacherRecordsService.deleteTeacherRecordByUserId({ user_id: id });
 
         return this.usersService.deleteUserById({ id });
       }, res),

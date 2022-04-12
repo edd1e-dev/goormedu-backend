@@ -7,6 +7,7 @@ import {
   UpdateUserByIdDTO,
   CreateUserDTO,
   FindUserBySubDTO,
+  DeleteUserRecordByIdDTO
 } from './users.dto';
 import { CustomError } from '@/commons/interfaces';
 

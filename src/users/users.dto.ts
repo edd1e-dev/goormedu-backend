@@ -78,3 +78,7 @@ export class UpdateUserByIdDTO {
 export class DeleteUserByIdDTO {
   id: number;
 }
+
+export class DeleteUserRecordByIdDTO {
+  id: number;
+}

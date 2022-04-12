@@ -1,4 +1,7 @@
-import { DeleteLearnRecordDTO } from '../dtos/learn-records.dto';
+import {
+  DeleteLearnRecordByStudentIdDTO,
+  DeleteLearnRecordDTO,
+} from '../dtos/learn-records.dto';
 import { Repository } from 'typeorm';
 import { CustomError, IService } from '@/commons/interfaces';
 import LearnRecord from '@/courses/entities/learn-record.entity';
@@ -58,10 +61,18 @@ export default class LearnRecordsService implements IService {
     const result = await this.learnRecordRepository.save(learnRecord);
     return result;
   }
+
   async deleteLearnRecord({
     where: { student_id, course_id },
   }: DeleteLearnRecordDTO): Promise<{ student_id: number; course_id: number }> {
     await this.learnRecordRepository.delete({ student_id, course_id });
     return { student_id, course_id };
+  }
+
+  async deleteLearnRecordByStudentId({
+    student_id,
+  }: DeleteLearnRecordByStudentIdDTO): Promise<{ student_id }> {
+    await this.learnRecordRepository.delete({ student_id });
+    return { student_id };
   }
 }
