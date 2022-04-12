@@ -7,7 +7,7 @@ import Course from '@/courses/entities/course.entity';
 import LearnRecord from '@/courses/entities/learn-record.entity';
 import Chapter from '@/courses/entities/chapter.entity';
 import Lecture from '@/courses/entities/lecture.entity';
-import CompletionRecord from '@/completion-records/completion-record.entitiy';
+import CompletionRecord from '@/courses/entities/completion-record.entitiy';
 
 const AppDataSource = new DataSource({
   type: 'mysql',
