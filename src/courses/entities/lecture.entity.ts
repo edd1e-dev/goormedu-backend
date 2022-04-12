@@ -1,5 +1,12 @@
 import CoreEntity from '@/commons/core.entity';
-import { IsBoolean, IsNumber, IsString, IsDate, IsUrl } from 'class-validator';
+import {
+  IsBoolean,
+  IsNumber,
+  IsString,
+  IsDate,
+  IsUrl,
+  IsOptional,
+} from 'class-validator';
 import {
   Column,
   CreateDateColumn,
@@ -32,11 +39,13 @@ export default class Lecture extends CoreEntity {
 
   @Column({ nullable: true })
   @IsUrl()
-  video_url: string;
+  @IsOptional()
+  video_url?: string;
 
   @Column({ nullable: true })
   @IsString()
-  content: string;
+  @IsOptional()
+  content?: string;
 
   @Column()
   @IsNumber()
@@ -48,7 +57,7 @@ export default class Lecture extends CoreEntity {
 
   @CreateDateColumn()
   @IsDate()
-  create_at: Date;
+  created_at: Date;
 
   @UpdateDateColumn()
   @IsDate()

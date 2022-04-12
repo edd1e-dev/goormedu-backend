@@ -19,6 +19,11 @@ const envVarsSchema = joi
     DB_USERNAME: joi.string().required(),
     DB_PASSWORD: joi.string().required(),
     DB_DATABASE: joi.string().required(),
+
+    AWS_REGION: joi.string().required(),
+    AWS_S3: joi.string().required(),
+    AWS_CLIENT_ID: joi.string().required(),
+    AWS_SECRET: joi.string().required(),
   })
   .unknown();
 
