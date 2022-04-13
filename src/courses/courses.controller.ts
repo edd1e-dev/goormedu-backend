@@ -386,10 +386,19 @@ export default class CoursesController implements IController {
         });
         // 수강 기록이 존재하지 않으면 에러 반환
 
-        const result = this.completionRecordsService.createCompletionRecord({
-          student_id: user.id,
-          lecture_id,
-          course_id,
+        const result =
+          await this.completionRecordsService.createCompletionRecord({
+            student_id: user.id,
+            lecture_id,
+            course_id,
+          });
+
+        await this.learnRecordsService.updateLearnRecord({
+          where: { student_id: user.id, course_id },
+          data: {
+            last_lecture_id: result.lecture_id,
+            last_learning_date: result.created_at,
+          },
         });
 
         return result;
@@ -690,7 +699,9 @@ export default class CoursesController implements IController {
             course_id,
           });
 
-          await this.completionRecordsService.deleteCompletionRecord({ lecture_id });
+          await this.completionRecordsService.deleteCompletionRecord({
+            lecture_id,
+          });
 
           return result;
         }, res),
