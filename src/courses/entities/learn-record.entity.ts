@@ -34,11 +34,6 @@ export default class LearnRecord extends CoreEntity {
   @IsOptional()
   last_lecture_id?: number;
 
-  @Column({ nullable: true })
-  @IsNumber()
-  @IsOptional()
-  next_lecture_id?: number;
-
   @CreateDateColumn()
   @IsDate()
   created_at: Date;

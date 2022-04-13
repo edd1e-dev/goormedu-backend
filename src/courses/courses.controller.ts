@@ -53,7 +53,6 @@ export default class CoursesController implements IController {
     student_id: true,
     last_learning_date: true,
     last_lecture_id: true,
-    next_lecture_id: true,
   };
 
   private static readonly chapterSelect: FindOptionsSelect<Chapter> = {
@@ -690,6 +689,8 @@ export default class CoursesController implements IController {
             teacher_id: user.id,
             course_id,
           });
+
+          await this.completionRecordsService.deleteCompletionRecord({ lecture_id });
 
           return result;
         }, res),

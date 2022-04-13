@@ -1,5 +1,6 @@
 import CompletionRecord from '../entities/completion-record.entitiy';
 import { FindOptionsSelect } from 'typeorm';
+import { number } from 'joi';
 
 export class FindCompletionRecordDTO {
   where: {
@@ -19,4 +20,8 @@ export class CreateCompletionRecordDTO {
 export class CountCompletionRecordDTO {
   student_id: number;
   course_id: number;
+}
+
+export class DeleteCompletionRecordDTO {
+  lecture_id: number;
 }

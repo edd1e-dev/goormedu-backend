@@ -10,7 +10,7 @@ export class CreateTeacherRecordData {
 
 export class UpdateTeacherRecordData {
   constructor({ career, accepted }: UpdateTeacherRecordData) {
-    if (accepted) this.accepted = accepted;
+    if (accepted !== undefined) this.accepted = accepted;
     if (career) this.career = career;
   }
 
