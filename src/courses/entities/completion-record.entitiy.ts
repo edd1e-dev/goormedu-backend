@@ -1,6 +1,12 @@
 import CoreEntity from '@/commons/core.entity';
-import { Entity, Column, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { IsNumber } from 'class-validator';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  Unique,
+  CreateDateColumn,
+} from 'typeorm';
+import { IsNumber, IsDate } from 'class-validator';
 
 @Entity()
 @Unique(['student_id', 'lecture_id'])
@@ -20,4 +26,8 @@ export default class CompletionRecord extends CoreEntity {
   @IsNumber()
   @Column()
   course_id: number;
+
+  @CreateDateColumn()
+  @IsDate()
+  created_at: Date;
 }
