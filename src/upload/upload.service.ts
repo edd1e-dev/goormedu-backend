@@ -1,4 +1,4 @@
-import { IService } from '@/commons/interfaces';
+import { CustomError, IService } from '@/commons/interfaces';
 import { DeleteFileDTO, UploadFileDTO } from './upload.dto';
 import {
   DeleteObjectCommandOutput,
@@ -23,13 +23,20 @@ export default class UploadService implements IService {
     username,
     file,
   }: UploadFileDTO): Promise<PutObjectCommandOutput> {
+    const now = Date.now();
     const result = await this.s3.putObject({
       Bucket: env.AWS_S3,
-      Key: `${file.fieldname}/${username}/${Date.now()}`,
+      Key: `${file.fieldname}/${username}/${now}`,
       ACL: 'public-read',
       ContentType: file.mimetype,
       Body: file.buffer,
     });
+
+    if (!result) {
+      throw new CustomError('파일 업로드에 실패했습니다.');
+    }
+
+    result['url'] = `https://${env.AWS_S3}.s3.${env.AWS_REGION}.amazonaws.com/${file.fieldname}/${username}/${now}`;
     return result;
   }
 
@@ -38,6 +45,11 @@ export default class UploadService implements IService {
       Bucket: env.AWS_S3,
       Key: key,
     });
+
+    if (!result) {
+      throw new CustomError('파일 삭제에 실패했습니다.');
+    }
+
     return result;
   }
 }

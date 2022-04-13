@@ -30,7 +30,6 @@ export default class UploadController implements IController {
         return res.send({ ok: false, error: '파일을 읽지 못했습니다.' });
       }
     } catch (error) {
-      console.log(error);
       return res.send({ error });
     }
   }
@@ -65,6 +64,7 @@ export default class UploadController implements IController {
       SingleLectureVideoMiddleware,
       (req, res) => this.upload(req, res),
     );
+    
     this.router.post('/lecture-video/delete', (req, res) =>
       this.delete(req, res),
     );

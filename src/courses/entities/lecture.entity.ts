@@ -38,7 +38,7 @@ export default class Lecture extends CoreEntity {
   title: string;
 
   @Column({ nullable: true })
-  @IsUrl()
+  @IsString()
   @IsOptional()
   video_url?: string;
 
