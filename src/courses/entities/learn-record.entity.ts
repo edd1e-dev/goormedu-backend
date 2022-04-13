@@ -6,9 +6,11 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  Unique,
 } from 'typeorm';
 
 @Entity()
+@Unique(['student_id', 'course_id'])
 export default class LearnRecord extends CoreEntity {
   @PrimaryGeneratedColumn()
   @IsNumber()

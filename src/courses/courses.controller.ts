@@ -23,7 +23,8 @@ import {
 } from '@/upload/upload.middleware';
 import UploadService from '@/upload/upload.service';
 import UsersService from '@/users/users.service';
-import env from '@/commons/config';
+import CompletionRecordsService from './services/completion-records.service';
+import CompletionRecord from './entities/completion-record.entitiy';
 
 export default class CoursesController implements IController {
   public readonly route: string;
@@ -35,6 +36,7 @@ export default class CoursesController implements IController {
   private readonly tmpService: TmpService;
   private readonly uploadService: UploadService;
   private readonly usersService: UsersService;
+  private readonly completionRecordsService: CompletionRecordsService;
 
   private static readonly courseSelect: FindOptionsSelect<Course> = {
     id: true,
@@ -72,6 +74,14 @@ export default class CoursesController implements IController {
     is_public: true,
   };
 
+  private static readonly completionRecordSelect: FindOptionsSelect<CompletionRecord> =
+    {
+      id: true,
+      lecture_id: true,
+      student_id: true,
+      course_id: true,
+    };
+
   constructor() {
     this.coursesService = new CoursesService();
     this.learnRecordsService = new LearnRecordsService();
@@ -80,6 +90,7 @@ export default class CoursesController implements IController {
     this.tmpService = new TmpService();
     this.uploadService = new UploadService();
     this.usersService = new UsersService();
+    this.completionRecordsService = new CompletionRecordsService();
     this.route = '/courses';
     this.router = express.Router();
   }
@@ -346,7 +357,45 @@ export default class CoursesController implements IController {
     ); // 챕터 내 강의 정보를 확인하기 위한 간단한 정보, public, Lecture[]
 
     this.router.use(JwtGuard);
-    this.router.get('/:course_id/lectures/:lecture_id/completion-record'); // 해당 강의 이수 여부 확인
+    this.router.get(
+      '/:course_id/lectures/:lecture_id/completion-record',
+      (req, res) =>
+        this.getApi(async () => {
+          const user = new JwtPayload(req.user as Express.User);
+          await validateOrReject(user, { whitelist: true });
+          const lecture_id = parseInt(req.params.lecture_id);
+          const course_id = parseInt(req.params.course_id);
+
+          const result =
+            await this.completionRecordsService.findCompletionRecord({
+              where: { student_id: user.id, lecture_id, course_id },
+              select: CoursesController.completionRecordSelect,
+            });
+          return result;
+        }, res),
+    ); // 해당 강의 이수 여부 확인
+    this.router.post('/:course_id/lectures/:lecture_id/complete', (req, res) =>
+      this.getApi(async () => {
+        const user = new JwtPayload(req.user as Express.User);
+        await validateOrReject(user, { whitelist: true });
+
+        const course_id = parseInt(req.params.course_id);
+        const lecture_id = parseInt(req.params.lecture_id);
+
+        await this.learnRecordsService.findLearnRecord({
+          where: { student_id: user.id, course_id },
+        });
+        // 수강 기록이 존재하지 않으면 에러 반환
+
+        const result = this.completionRecordsService.createCompletionRecord({
+          student_id: user.id,
+          lecture_id,
+          course_id,
+        });
+
+        return result;
+      }, res),
+    ); // 해당 강의 이수 완료 요청
     this.router.get('/:course_id/lectures/:lecture_id/detail', (req, res) =>
       this.getApi(async () => {
         const user = new JwtPayload(req.user as Express.User);
@@ -383,7 +432,7 @@ export default class CoursesController implements IController {
             },
             select: CoursesController.learnRecordSelect,
           }),
-          this.tmpService.countCompletionRecord({
+          this.completionRecordsService.countCompletionRecord({
             student_id: user.id,
             course_id: parseInt(req.params.course_id),
           }),
