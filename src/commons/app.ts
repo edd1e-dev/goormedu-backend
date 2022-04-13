@@ -8,6 +8,13 @@ import cors from 'cors';
 import GoogleStrategy from '../auth/google.strategy';
 import JwtStrategy from '@/jwt/jwt.strategy';
 import globalRouter from './globalRouter';
+import * as Sentry from '@sentry/node';
+import * as Tracing from '@sentry/tracing';
+
+Sentry.init({
+  dsn: "https://c9925687ea754f8e864b42070bc71aa0@o1202267.ingest.sentry.io/6327291",
+  tracesSampleRate: 1.0,
+});
 
 const app = express();
 
