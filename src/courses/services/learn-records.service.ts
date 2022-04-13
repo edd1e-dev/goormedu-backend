@@ -60,4 +60,11 @@ export default class LearnRecordsService implements IService {
     const result = await this.learnRecordRepository.save(learnRecord);
     return result;
   }
+
+  async deleteLearnRecordByStudentId({
+    student_id,
+  }: DeleteLearnRecordByStudentIdDTO): Promise<{ student_id }> {
+    await this.learnRecordRepository.delete({ student_id });
+    return { student_id };
+  }
 }

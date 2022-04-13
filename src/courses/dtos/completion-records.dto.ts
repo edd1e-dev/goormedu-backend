@@ -25,3 +25,7 @@ export class CountCompletionRecordDTO {
 export class DeleteCompletionRecordDTO {
   lecture_id: number;
 }
+
+export class DeleteCompletionRecordByStudentIdDTO {
+  student_id: number;
+}
