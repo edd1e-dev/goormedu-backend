@@ -1,8 +1,10 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import env from '@/commons/config';
 import passport from 'passport';
 import { urlencoded } from 'express';
 import helmet from 'helmet';
+import cors from 'cors';
 import GoogleStrategy from '../auth/google.strategy';
 import JwtStrategy from '@/jwt/jwt.strategy';
 import globalRouter from './globalRouter';
@@ -21,6 +23,13 @@ app.use(
 
 passport.use(GoogleStrategy);
 passport.use(JwtStrategy);
+
+app.use(
+  cors({
+    origin: env.CLIENT_DOMAIN,
+    credentials: true,
+  }),
+);
 
 app.get('/jwt-fail', (_, res) =>
   res.send({ ok: false, error: 'Jwt Not Authenticated' }),
