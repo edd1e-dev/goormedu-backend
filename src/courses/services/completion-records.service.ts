@@ -2,6 +2,7 @@ import {
   FindCompletionRecordDTO,
   CreateCompletionRecordDTO,
   CountCompletionRecordDTO,
+  DeleteCompletionRecordByStudentIdDTO,
 } from './../dtos/completion-records.dto';
 import AppDataSource from '@/commons/db';
 import { CustomError, IService } from '@/commons/interfaces';
@@ -49,5 +50,12 @@ export default class CompletionRecordsService implements IService {
       select: { lecture_id: true },
     });
     return result.length;
+  }
+
+  async deleteCompletionRecordByStudentId({
+    student_id,
+  }: DeleteCompletionRecordByStudentIdDTO): Promise<{ student_id }> {
+    await this.completionRecordRepository.delete({ student_id });
+    return { student_id };
   }
 }
