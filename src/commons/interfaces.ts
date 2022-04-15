@@ -22,6 +22,7 @@ export interface IEnv {
   AWS_S3: string;
   AWS_CLIENT_ID: string;
   AWS_SECRET: string;
+  SENTRY_DSN: string;
 }
 
 export enum UserRole {

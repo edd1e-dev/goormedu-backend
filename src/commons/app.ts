@@ -12,7 +12,7 @@ import * as Sentry from '@sentry/node';
 import * as Tracing from '@sentry/tracing';
 
 Sentry.init({
-  dsn: "https://c9925687ea754f8e864b42070bc71aa0@o1202267.ingest.sentry.io/6327291",
+  dsn: env.SENTRY_DSN,
   tracesSampleRate: 1.0,
 });
 

@@ -1,18 +1,23 @@
-FROM node:16.14.2-alpine
+# syntax=docker/dockerfile:1
 
-# 앱 디렉터리 생성
+# ---- Base Stage ----
+# 알파인 이미지 사용해서 작은 베이스 이미지를 사용해서 도커 이미지 작게 만듬
+FROM node:16.14.2-alpine AS builder
+
 WORKDIR /usr/src/app
+COPY package*.json tsconfig*.json ./
+RUN npm ci && npm cache clean -f
+COPY ./src ./src
+RUN npm run build
 
-# 캐시를 이용하기 위한 COPY -> 전체 파일 복사 시 시간 오래걸림
-COPY package*.json ./
+FROM node:16.14.2-alpine
+ENV NODE_ENV=production
+RUN apk add --no-cache tini
+ENTRYPOINT ["/sbin/tini", "--"]
+WORKDIR /usr/src/app
+COPY --from=builder /usr/src/app ./
 
-# 필요한 패키지를 node_modules폴더에 설치
-# 도커 이미지 사이즈를 최대한 작게 하기 위해
-# 이미지를 만들 때부터 넣지 않고 컨테이너 생성 시 설치
-RUN npm install
+EXPOSE 4000
 
-# 앱 소스 추가
-COPY . .
-
-EXPOSE 8080
-CMD [ "node", "index.js" ]
+# ENTRYPOINT 와 CMD는 리스트 포맷 ( ["args1", "args2",...] )으로 정의해 주는게 좋다. 
+CMD [ "npm", "run", "start" ]
