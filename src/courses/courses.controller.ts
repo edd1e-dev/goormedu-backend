@@ -192,8 +192,13 @@ export default class CoursesController implements IController {
             cover_image = upload['url'];
           }
 
+          const category_id = parseInt(req.body.category_id);
+          const level = parseInt(req.body.level);
+
           const data = new CreateCourseData({
             ...req.body,
+            category_id,
+            level,
             cover_image,
           });
 
@@ -254,8 +259,13 @@ export default class CoursesController implements IController {
             new_cover_image = upload['url'];
           }
 
+          const category_id = parseInt(req.body.category_id);
+          const level = parseInt(req.body.level);
+
           const data = new UpdateCourseData({
             ...req.body,
+            category_id,
+            level,
             cover_image: new_cover_image,
           });
 
@@ -271,9 +281,11 @@ export default class CoursesController implements IController {
             throw new CustomError('잘못된 값이 입력되었습니다.');
           } else {
             // 검증에 성공하면 기존 코스 커버 이미지 삭제
-            await this.uploadService.deleteFile({
-              key: cover_image.split('.amazonaws.com/')[1],
-            });
+            if (new_cover_image) {
+              await this.uploadService.deleteFile({
+                key: cover_image.split('.amazonaws.com/')[1],
+              });
+            }
           }
 
           const result = await this.coursesService.updateCourse({
@@ -495,10 +507,24 @@ export default class CoursesController implements IController {
           select: { teacher_id: true },
         }); // 내 소유의 코스 중 해당 강의가 없으면 오류
 
+        const chapters = await this.chaptersService.findChaptersByCourseId({
+          course_id,
+          select: { order: true },
+        });
+
+        const orders: number[] = new Array();
+
+        chapters.map((chapter) => {
+          orders.push(chapter.order);
+        });
+
+        const order = orders.length > 0 ? Math.max(...orders) + 1 : 1;
+
         const result = await this.chaptersService.createChapter({
           where: {
             teacher_id: user.id,
             course_id,
+            order,
           },
           data,
         });
@@ -584,9 +610,18 @@ export default class CoursesController implements IController {
             video_url = upload['url'];
           }
 
+          const chapter_id = parseInt(req.body.chapter_id);
+          const is_public =
+            req.body.is_public &&
+            (req.body.is_public === 'true' || req.body.is_public === 'false')
+              ? JSON.parse(req.body.is_public)
+              : null;
+
           const data = new CreateLectureData({
             ...req.body,
+            chapter_id,
             video_url,
+            is_public,
           });
 
           // 입력값 검증 과정
@@ -601,8 +636,23 @@ export default class CoursesController implements IController {
             throw new CustomError('잘못된 값이 입력되었습니다.');
           }
 
+          // 챕터 내의 모든 렉처 order를 불러와서 가 장 큰 값 + 1
+
+          const lectures = await this.lecturesService.findLecturesByChapterId({
+            chapter_id,
+            select: { order: true },
+          });
+
+          const orders: number[] = new Array();
+
+          lectures.map((lecture) => {
+            orders.push(lecture.order);
+          });
+
+          const order = orders.length > 0 ? Math.max(...orders) + 1 : 1;
+
           const result = await this.lecturesService.createLecture({
-            where: { teacher_id: user.id, course_id },
+            where: { teacher_id: user.id, course_id, order },
             data,
           });
           return result;
@@ -644,8 +694,19 @@ export default class CoursesController implements IController {
             new_video_url = upload['url'];
           }
 
+          const chapter_id = parseInt(req.body.chapter_id);
+          const order = parseFloat(req.body.order);
+          const is_public =
+            req.body.is_public &&
+            (req.body.is_public === 'true' || req.body.is_public === 'false')
+              ? JSON.parse(req.body.is_public)
+              : null;
+
           const data = new UpdateLectureData({
             ...req.body,
+            chapter_id,
+            order,
+            is_public,
             video_url: new_video_url,
           });
 
@@ -662,9 +723,11 @@ export default class CoursesController implements IController {
             throw new CustomError('잘못된 값이 입력되었습니다.');
           } else {
             // 검증에 성공하면 기존 강의 비디오 삭제
-            await this.uploadService.deleteFile({
-              key: video_url!.split('.amazonaws.com/')[1],
-            });
+            if (new_video_url) {
+              await this.uploadService.deleteFile({
+                key: video_url!.split('.amazonaws.com/')[1],
+              });
+            }
           }
 
           const result = await this.lecturesService.updateLecutre({

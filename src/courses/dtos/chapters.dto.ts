@@ -13,24 +13,21 @@ export class DeleteChaptersDTO {
 }
 
 export class CreateChapterData {
-  constructor({ title, order }: CreateChapterData) {
+  constructor({ title }: CreateChapterData) {
     this.title = title;
-    this.order = order;
   }
 
   @IsString()
   title: string;
-  @IsNumber()
-  order: number;
 }
 
 export class CreateChapterDTO {
-  where: { course_id: number; teacher_id: number };
+  where: { course_id: number; teacher_id: number; order: number };
   data: CreateChapterData;
 }
 
 export class UpdateChapterData {
-  constructor({ title, order }: CreateChapterData) {
+  constructor({ title, order }: UpdateChapterData) {
     if (title) this.title = title;
     if (order) this.order = order;
   }
