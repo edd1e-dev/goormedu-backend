@@ -31,8 +31,18 @@ export class FindLectureByIdDTO {
 }
 
 export class CreateLectureData {
-  constructor(data: CreateLectureData) {
-    for (const [key, val] of Object.entries(data)) this[key] = val;
+  constructor({
+    chapter_id,
+    title,
+    video_url,
+    content,
+    is_public,
+  }: CreateLectureData) {
+    this.chapter_id = chapter_id;
+    this.title = title;
+    if (video_url) this.video_url = video_url;
+    if (content) this.content = content;
+    if (is_public) this.is_public = is_public;
   }
 
   @IsNumber()
@@ -49,9 +59,6 @@ export class CreateLectureData {
   @IsOptional()
   content?: string;
 
-  @IsNumber()
-  order: number;
-
   @IsBoolean()
   @IsOptional()
   is_public?: boolean;
@@ -61,13 +68,26 @@ export class CreateLectureDTO {
   where: {
     teacher_id: number;
     course_id: number;
+    order: number;
   };
   data: CreateLectureData;
 }
 
 export class UpdateLectureData {
-  constructor(data: UpdateLectureData) {
-    for (const [key, val] of Object.entries(data)) this[key] = val;
+  constructor({
+    chapter_id,
+    title,
+    video_url,
+    content,
+    order,
+    is_public,
+  }: UpdateLectureData) {
+    if (chapter_id) this.chapter_id = chapter_id;
+    if (title) this.title = title;
+    if (order) this.order = order;
+    if (video_url) this.video_url = video_url;
+    if (content) this.content = content;
+    if (is_public) this.is_public = is_public;
   }
 
   @IsNumber()
