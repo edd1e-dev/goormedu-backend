@@ -58,6 +58,6 @@ jobs:
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
         task-definition: ${{ steps.task-def.outputs.task-definition }}
-        service: goorm-edu-loadbalncetest
+        service: goormedu-clone-service
         cluster: Fargate
         wait-for-service-stability: true
