@@ -1,6 +1,5 @@
 name: Deploy to Amazon ECR
 
-# 이벤트 생성될 시간
 on:
   push:
     branches: [ main ]
