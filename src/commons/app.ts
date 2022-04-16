@@ -9,7 +9,6 @@ import GoogleStrategy from '../auth/google.strategy';
 import JwtStrategy from '@/jwt/jwt.strategy';
 import globalRouter from './globalRouter';
 import * as Sentry from '@sentry/node';
-import * as Tracing from '@sentry/tracing';
 
 Sentry.init({
   dsn: env.SENTRY_DSN,

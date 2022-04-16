@@ -9,6 +9,10 @@ import CoursesController from '@/courses/courses.controller';
 
 const globalRouter = express.Router();
 
+globalRouter.get('/', (_, res) =>
+  res.send({ ok: true, result: 'HealthCheck Success' }),
+);
+
 const controllers: IController[] = [
   new UploadController(),
   new UsersController(),
