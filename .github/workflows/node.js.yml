@@ -51,13 +51,13 @@ jobs:
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: task-definition.json
-        container-name: my-container
+        container-name: goorm-edu-clone-container
         image: ${{ steps.build-image.outputs.image }}
 
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
         task-definition: ${{ steps.task-def.outputs.task-definition }}
-        service: my-service
-        cluster: my-cluster
+        service: goorm-edu-loadbalncetest
+        cluster: Fargate
         wait-for-service-stability: true
