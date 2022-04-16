@@ -28,7 +28,7 @@ export default class AuthController implements IController {
     this.router.use((req, res, next) => {
       this.redirectUrl = new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`).origin;
       if (!this.redirectUrl) {
-        res.send({ ok: false, error: '도메인을 찾을 수 없습니다.' });
+        res.send({ ok: false, error: '리다이렉트 주소를 찾을 수 없습니다.' });
       } else {
         next();
       }
