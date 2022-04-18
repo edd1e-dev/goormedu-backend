@@ -8,14 +8,12 @@ import env from '@/commons/config';
 import JwtGuard from '@/middleware/jwt.guard';
 import { IController } from '@/commons/interfaces';
 import { JwtPayload } from '@/jwt/jwt.dto';
-import { nextTick } from 'process';
 
 export default class AuthController implements IController {
   public readonly route: string;
   private readonly jwtService: JwtService;
   private readonly usersService: UsersService;
   private readonly router: Router;
-  private redirectUrl: string;
 
   constructor() {
     this.jwtService = new JwtService();
@@ -25,6 +23,7 @@ export default class AuthController implements IController {
   }
 
   getRouter(): Router {
+    /**
     this.router.use((req, res, next) => {
       this.redirectUrl = new URL(`${req.protocol}://${req.get('host')}${req.originalUrl}`).origin;
       if (!this.redirectUrl) {
@@ -33,6 +32,7 @@ export default class AuthController implements IController {
         next();
       }
     });
+     */
 
     this.router.get('/google/fail', (_, res) =>
       res.send({ ok: false, error: '구글 인증이 실패했습니다.' }),
@@ -71,17 +71,17 @@ export default class AuthController implements IController {
           const token = await this.jwtService.sign(payload);
           return res
             .cookie('jwt', token, JwtService.jwtCookieOptions)
-            .redirect(this.redirectUrl);
+            .redirect(env.CLIENT_DOMAIN);
         } catch {
           // 로그인 실패를 나타내는 페이지로 이동
-          return res.redirect(this.redirectUrl);
+          return res.redirect(env.CLIENT_DOMAIN);
         }
       },
     );
 
     this.router.get('/logout', JwtGuard, (req, res) => {
       res.clearCookie('jwt');
-      return res.redirect(this.redirectUrl);
+      return res.redirect(env.CLIENT_DOMAIN);
     });
 
     return this.router;
