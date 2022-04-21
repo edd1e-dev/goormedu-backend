@@ -1,5 +1,10 @@
 import Lecture from '@/courses/entities/lecture.entity';
-import { CreateCourseData, UpdateCourseData } from './dtos/courses.dto';
+import {
+  CreateCourseData,
+  UpdateCourseData,
+  CreateCourseDataWithCoverImage,
+  UpdateCourseDataWithCoverImage,
+} from './dtos/courses.dto';
 import JwtGuard from '@/middleware/jwt.guard';
 import { FindOptionsSelect } from 'typeorm';
 import express, { Response, Router } from 'express';
@@ -14,9 +19,19 @@ import LearnRecordsService from './services/learn-records.service';
 import ChaptersService from './services/chapters.service';
 import LearnRecord from './entities/learn-record.entity';
 import Chapter from './entities/chapter.entity';
-import { CreateChapterData, UpdateChapterData } from './dtos/chapters.dto';
+import {
+  CreateChapterData,
+  UpdateChapterData,
+  UpdateChaptersOrderData,
+} from './dtos/chapters.dto';
 import LecturesService from './services/lectures.service';
-import { CreateLectureData, UpdateLectureData } from './dtos/lectures.dto';
+import {
+  CreateLectureData,
+  CreateLectureDataWithVideoUrl,
+  UpdateLectureData,
+  UpdateLectureDataWithVideUrl,
+  UpdateLecturesOrderData,
+} from './dtos/lectures.dto';
 import {
   SingleCoverImageMiddleware,
   SingleLectureVideoMiddleware,
@@ -176,22 +191,6 @@ export default class CoursesController implements IController {
           const user = new JwtPayload(req.user as Express.User);
           await validateOrReject(user, { whitelist: true });
 
-          // s3로부터 cover_image url을 받아오는 과정
-          const { email } = await this.usersService.findUserById({
-            id: user.id,
-            select: { email: true },
-          });
-
-          let cover_image;
-          if (req.file) {
-            const splitedEmail = email.split('@');
-            const upload = await this.uploadService.uploadFile({
-              username: `${splitedEmail[0]}.${splitedEmail[1]}`,
-              file: req.file,
-            });
-            cover_image = upload['url'];
-          }
-
           const category_id = parseInt(req.body.category_id);
           const level = parseInt(req.body.level);
 
@@ -199,23 +198,39 @@ export default class CoursesController implements IController {
             ...req.body,
             category_id,
             level,
-            cover_image,
           });
 
           const errors = await validate(data, { whitelist: true });
 
+          // cover_image를 제외한 body값 검증
           if (errors.length > 0) {
-            if (cover_image) {
-              // 검증에 성공하면 기존 코스 커버 이미지 삭제
-              await this.uploadService.deleteFile({
-                key: cover_image.split('.amazonaws.com/')[1],
-              });
-            }
             throw new CustomError('잘못된 값이 입력되었습니다.');
           }
+
+          if (!req.file) {
+            throw new CustomError('코스 이미지 파일이 전달되지 않았습니다.');
+          }
+
+          // s3 관련 작업 시작
+          const { email } = await this.usersService.findUserById({
+            id: user.id,
+            select: { email: true },
+          });
+          const splitedEmail = email.split('@');
+          const upload = await this.uploadService.uploadFile({
+            username: `${splitedEmail[0]}.${splitedEmail[1]}`,
+            file: req.file,
+          });
+          const cover_image = upload['url'];
+
+          const dataWithCoverImage = new CreateCourseDataWithCoverImage({
+            ...data,
+            cover_image,
+          });
+
           const result = await this.coursesService.createCourse({
             teacher_id: user.id,
-            data,
+            data: dataWithCoverImage,
           });
           return result;
         }, res),
@@ -231,7 +246,6 @@ export default class CoursesController implements IController {
           await validateOrReject(user, { whitelist: true });
 
           const course_id = parseInt(req.params.course_id);
-
           const { teacher_id, cover_image } =
             await this.coursesService.findCourseById({
               id: course_id,
@@ -242,23 +256,6 @@ export default class CoursesController implements IController {
             throw new CustomError('코스 변경 권한이 없습니다.');
           }
 
-          // s3로부터 cover_image url을 받아오는 과정
-          // 이전 데이터를 지우는 과정은 update 서비스 내부에서
-          const { email } = await this.usersService.findUserById({
-            id: user.id,
-            select: { email: true },
-          });
-
-          let new_cover_image;
-          if (req.file) {
-            const splitedEmail = email.split('@');
-            const upload = await this.uploadService.uploadFile({
-              username: `${splitedEmail[0]}.${splitedEmail[1]}`,
-              file: req.file,
-            });
-            new_cover_image = upload['url'];
-          }
-
           const category_id = parseInt(req.body.category_id);
           const level = parseInt(req.body.level);
 
@@ -266,26 +263,47 @@ export default class CoursesController implements IController {
             ...req.body,
             category_id,
             level,
-            cover_image: new_cover_image,
           });
 
+          // file을 제외한 body값 검증
           const errors = await validate(data, { whitelist: true });
           if (errors.length > 0) {
-            if (new_cover_image) {
-              // 실패 시 만들던 새로운 코스 커버 이미지 삭제
-              await this.uploadService.deleteFile({
-                key: new_cover_image.split('.amazonaws.com/')[1],
-              });
-              new_cover_image = cover_image;
-            }
             throw new CustomError('잘못된 값이 입력되었습니다.');
-          } else {
-            // 검증에 성공하면 기존 코스 커버 이미지 삭제
-            if (new_cover_image) {
+          }
+
+          // req.file이 있을 경우
+          if (req.file) {
+            const { email } = await this.usersService.findUserById({
+              id: user.id,
+              select: { email: true },
+            });
+
+            const splitedEmail = email.split('@');
+            const upload = await this.uploadService.uploadFile({
+              username: `${splitedEmail[0]}.${splitedEmail[1]}`,
+              file: req.file,
+            });
+            const new_cover_image = upload['url'];
+
+            const dataWithCoverImage = new UpdateCourseDataWithCoverImage({
+              ...data,
+              cover_image: new_cover_image,
+            });
+
+            const result = await this.coursesService.updateCourseWithCoverImage(
+              {
+                where: { id: course_id, teacher_id },
+                data: dataWithCoverImage,
+              },
+            );
+
+            // db 업데이트 성공하면 기존의 커버 이미지 삭제
+            if (result) {
               await this.uploadService.deleteFile({
                 key: cover_image.split('.amazonaws.com/')[1],
               });
             }
+            return result;
           }
 
           const result = await this.coursesService.updateCourse({
@@ -295,7 +313,6 @@ export default class CoursesController implements IController {
           return result;
         }, res),
     );
-
     // 코스를 지울 땐, 코스는 삭제되지 않고 챕터와 강의만 삭제된다.
     // deleteCourse는 teacher_id를 0으로 변경하여 해당 교육자로 부터 권한을 제거한다.
     this.router.post(
@@ -502,23 +519,27 @@ export default class CoursesController implements IController {
         }
         const course_id = parseInt(req.params.course_id);
 
-        await this.coursesService.findCourseById({
+        const { teacher_id } = await this.coursesService.findCourseById({
           id: course_id,
           select: { teacher_id: true },
-        }); // 내 소유의 코스 중 해당 강의가 없으면 오류
+        });
+
+        if (teacher_id !== user.id) {
+          throw new CustomError('챕터 생성 권한이 없습니다.');
+        }
 
         const chapters = await this.chaptersService.findChaptersByCourseId({
           course_id,
           select: { order: true },
         });
 
-        const orders: number[] = new Array();
+        const orders: number[] = [];
 
         chapters.map((chapter) => {
           orders.push(chapter.order);
         });
 
-        const order = orders.length > 0 ? Math.max(...orders) + 1 : 1;
+        const order = orders.length > 0 ? Math.max(...orders) + 1 : 0;
 
         const result = await this.chaptersService.createChapter({
           where: {
@@ -531,10 +552,73 @@ export default class CoursesController implements IController {
         return result;
       }, res),
     );
+    this.router.post('/:course_id/chapters/update', (req, res) =>
+      this.getApi(async () => {
+        const user = new JwtPayload(req.user as Express.User);
+        await validateOrReject(user, { whitelist: true });
+
+        const course_id = parseInt(req.params.course_id);
+
+        const { teacher_id } = await this.coursesService.findCourseById({
+          id: course_id,
+          select: { teacher_id: true },
+        });
+
+        if (teacher_id !== user.id) {
+          throw new CustomError('챕터 순서 수정 권한이 없습니다.');
+        }
+
+        const data = new UpdateChaptersOrderData(req.body);
+        const errors = await validate(data, { whitelist: true });
+
+        if (errors.length > 0) {
+          throw new CustomError('잘못된 값이 입력되었습니다.');
+        }
+
+        const chapter_records =
+          await this.chaptersService.findChaptersByCourseId({
+            course_id,
+            select: { id: true, order: true },
+          });
+
+        const chapter_records_ids = chapter_records.map((chapter) => {
+          return chapter.id;
+        });
+
+        if (!(data.chapters.length === chapter_records_ids.length)) {
+          throw new CustomError('잘못된 값이 입력되었습니다.');
+        }
+        if (
+          ![...data.chapters].sort().every(function (value, index) {
+            return value === [...chapter_records_ids].sort()[index];
+          })
+        ) {
+          throw new CustomError('잘못된 값이 입력되었습니다.');
+        }
+
+        const result = await this.chaptersService.updateChapterOrders({
+          teacher_id: user.id,
+          data,
+        });
+
+        return result;
+      }, res),
+    );
     this.router.post('/:course_id/chapters/:chapter_id/update', (req, res) =>
       this.getApi(async () => {
         const user = new JwtPayload(req.user as Express.User);
         await validateOrReject(user, { whitelist: true });
+
+        const course_id = parseInt(req.params.course_id);
+
+        const { teacher_id } = await this.coursesService.findCourseById({
+          id: course_id,
+          select: { teacher_id: true },
+        });
+
+        if (teacher_id !== user.id) {
+          throw new CustomError('챕터 수정 권한이 없습니다.');
+        }
 
         const data = new UpdateChapterData(req.body);
         const errors = await validate(data, { whitelist: true });
@@ -558,28 +642,23 @@ export default class CoursesController implements IController {
         const user = new JwtPayload(req.user as Express.User);
         await validateOrReject(user, { whitelist: true });
 
+        const lectures = await this.lecturesService.findLecturesByChapterId({
+          chapter_id: id,
+          select: { id: true },
+        });
+
+        if (lectures.length > 0) {
+          throw new CustomError('강의가 존재하는 챕터는 삭제 할 수 없습니다.');
+        }
+
         const deleteResult = await this.chaptersService.deleteChapter({
           id,
           teacher_id: user.id,
         });
 
-        const updateResult =
-          await this.lecturesService.updateChapterlessLectures({
-            chapter_id: id,
-            teacher_id: user.id,
-          });
-
-        if (!updateResult) {
-          return null;
-        }
-
         return deleteResult;
       }, res),
     );
-    // 포함된 강의또한 제거한다. 따라서 내부 강의가 다른 챕터로 이동할 경우를 대비해
-    // 프론트측에서 delete작업은 모든 수정, 생성 작업이 완료된 후 실행하도록 약속한다.
-    // 혹은 포함된 작업을 제거하지 않도록 수정후 챕터와의 연결성을 잃은 강의들을 처리할 방법을 생각해야함
-
     this.router.post(
       '/:course_id/lectures/create',
       SingleLectureVideoMiddleware,
@@ -589,72 +668,145 @@ export default class CoursesController implements IController {
           await validateOrReject(user, { whitelist: true });
           const course_id = parseInt(req.params.course_id);
 
-          await this.coursesService.findCourseById({
+          const { teacher_id } = await this.coursesService.findCourseById({
             id: course_id,
             select: { teacher_id: true },
-          }); // 내 소유의 코스 중 해당 코스가 없으면 오류 -> 권한 확인
-
-          // s3 에서 video_url 받아오는 과정 필요
-          const { email } = await this.usersService.findUserById({
-            id: user.id,
-            select: { email: true },
           });
 
-          let video_url = '';
-          if (req.file) {
-            const splitedEmail = email.split('@');
-            const upload = await this.uploadService.uploadFile({
-              username: `${splitedEmail[0]}.${splitedEmail[1]}`,
-              file: req.file,
-            });
-            video_url = upload['url'];
+          if (teacher_id !== user.id) {
+            throw new CustomError('강의 생성 권한이 없습니다.');
           }
 
           const chapter_id = parseInt(req.body.chapter_id);
+
           const is_public =
             req.body.is_public &&
             (req.body.is_public === 'true' || req.body.is_public === 'false')
               ? JSON.parse(req.body.is_public)
               : null;
 
+          await this.chaptersService.findChapterByChapterAndCourseId({
+            chapter_id,
+            course_id,
+            select: { id: true },
+          });
+
           const data = new CreateLectureData({
             ...req.body,
             chapter_id,
-            video_url,
             is_public,
           });
 
-          // 입력값 검증 과정
           const errors = await validate(data, { whitelist: true });
+
+          // video_url을 제외한 body값 검증
           if (errors.length > 0) {
-            if (video_url) {
-              // 검증에 성공하면 기존 강의 비디오 삭제
-              await this.uploadService.deleteFile({
-                key: video_url.split('.amazonaws.com/')[1],
-              });
-            }
             throw new CustomError('잘못된 값이 입력되었습니다.');
           }
 
-          // 챕터 내의 모든 렉처 order를 불러와서 가 장 큰 값 + 1
-
+          // order값 계산
           const lectures = await this.lecturesService.findLecturesByChapterId({
             chapter_id,
             select: { order: true },
           });
 
-          const orders: number[] = new Array();
+          const orders: number[] = [];
 
           lectures.map((lecture) => {
             orders.push(lecture.order);
           });
 
-          const order = orders.length > 0 ? Math.max(...orders) + 1 : 1;
+          const order = orders.length > 0 ? Math.max(...orders) + 1 : 0;
+
+          // req.file이 있을 경우
+          if (req.file) {
+            const { email } = await this.usersService.findUserById({
+              id: user.id,
+              select: { email: true },
+            });
+
+            const splitedEmail = email.split('@');
+            const upload = await this.uploadService.uploadFile({
+              username: `${splitedEmail[0]}.${splitedEmail[1]}`,
+              file: req.file,
+            });
+            const video_url = upload['url'];
+
+            const dataWithVideoUrl = new CreateLectureDataWithVideoUrl({
+              ...data,
+              video_url,
+            });
+
+            const result = await this.lecturesService.createLectureWithVideoUrl(
+              {
+                where: { teacher_id: user.id, course_id, order },
+                data: dataWithVideoUrl,
+              },
+            );
+
+            return result;
+          }
 
           const result = await this.lecturesService.createLecture({
             where: { teacher_id: user.id, course_id, order },
             data,
           });
+          return result;
+        }, res),
+    );
+    this.router.post(
+      '/:course_id/chapters/:chapter_id/lectures/update',
+      (req, res) =>
+        this.getApi(async () => {
+          const user = new JwtPayload(req.user as Express.User);
+          await validateOrReject(user, { whitelist: true });
+
+          const course_id = parseInt(req.params.course_id);
+          const chapter_id = parseInt(req.params.chapter_id);
+
+          const { teacher_id } = await this.coursesService.findCourseById({
+            id: course_id,
+            select: { teacher_id: true },
+          });
+
+          if (teacher_id !== user.id) {
+            throw new CustomError('강의 순서 수정 권한이 없습니다.');
+          }
+
+          const data = new UpdateLecturesOrderData(req.body);
+          const errors = await validate(data, { whitelist: true });
+
+          if (errors.length > 0) {
+            throw new CustomError('잘못된 값이 입력되었습니다.');
+          }
+
+          const lecture_records =
+            await this.lecturesService.findLecturesByChapterId({
+              chapter_id,
+              select: { id: true, order: true },
+            });
+
+          const lecture_records_ids = lecture_records.map((lecture) => {
+            return lecture.id;
+          });
+
+          if (!(data.lectures.length === lecture_records_ids.length)) {
+            throw new CustomError('잘못된 값이 입력되었습니다.');
+          }
+
+          if (
+            ![...data.lectures].sort().every(function (value, index) {
+              return value === [...lecture_records_ids].sort()[index];
+            })
+          ) {
+            throw new CustomError('잘못된 값이 입력되었습니다.');
+          }
+
+          const result = await this.lecturesService.updateLectureOrders({
+            teacher_id: user.id,
+            data,
+          });
+
           return result;
         }, res),
     );
@@ -668,72 +820,111 @@ export default class CoursesController implements IController {
           const course_id = parseInt(req.params.course_id);
           const lecture_id = parseInt(req.params.lecture_id);
 
-          await this.coursesService.findCourseById({
+          const { teacher_id } = await this.coursesService.findCourseById({
             id: course_id,
             select: { teacher_id: true },
-          }); // 내 소유의 코스 중 해당 코스가 없으면 오류 -> 권한 확인
-
-          // s3 에서 video_url 받아오는 과정 필요
-          const { video_url } = await this.lecturesService.findLectureById({
-            id: lecture_id,
-            select: { video_url: true },
           });
 
-          const { email } = await this.usersService.findUserById({
-            id: user.id,
-            select: { email: true },
-          });
-
-          let new_video_url;
-          if (req.file) {
-            const splitedEmail = email.split('@');
-            const upload = await this.uploadService.uploadFile({
-              username: `${splitedEmail[0]}.${splitedEmail[1]}`,
-              file: req.file,
-            });
-            new_video_url = upload['url'];
+          if (teacher_id !== user.id) {
+            throw new CustomError('강의 수정 권한이 없습니다.');
           }
 
           const chapter_id = parseInt(req.body.chapter_id);
-          const order = parseFloat(req.body.order);
           const is_public =
             req.body.is_public &&
             (req.body.is_public === 'true' || req.body.is_public === 'false')
               ? JSON.parse(req.body.is_public)
               : null;
 
+          // 변경할 챕터 id가 있으면 order값 계산해서 data검증에 넣어줌
+
+          if (req.body.order) {
+            throw new CustomError('순서는 이 방식으로 변경 할 수 없습니다.');
+          }
+
+          let order: number | null = null;
+
+          if (chapter_id) {
+            await this.chaptersService.findChapterByChapterAndCourseId({
+              course_id,
+              chapter_id,
+              select: { id: true },
+            });
+            const lectures = await this.lecturesService.findLecturesByChapterId(
+              {
+                chapter_id,
+                select: { order: true },
+              },
+            );
+
+            const orders: number[] = [];
+
+            lectures.map((lecture) => {
+              orders.push(lecture.order);
+            });
+
+            order = orders.length > 0 ? Math.max(...orders) + 1 : 0;
+          }
+
           const data = new UpdateLectureData({
             ...req.body,
             chapter_id,
-            order,
             is_public,
-            video_url: new_video_url,
+            order,
           });
 
-          // 입력값 검증 과정
+          // file을 제외한 body값 검증
           const errors = await validate(data, { whitelist: true });
           if (errors.length > 0) {
-            if (new_video_url) {
-              // 실패 시 만들던 새로운 강의 비디오 삭제
-              await this.uploadService.deleteFile({
-                key: new_video_url.split('.amazonaws.com/')[1],
-              });
-              new_video_url = video_url;
-            }
             throw new CustomError('잘못된 값이 입력되었습니다.');
-          } else {
-            // 검증에 성공하면 기존 강의 비디오 삭제
-            if (new_video_url) {
+          }
+
+          // req.file이 있을 경우
+          if (req.file) {
+            // 아래 video_url은 없을 수도 있음 -> 만들 때 video파일은 option이라서
+            const { video_url } = await this.lecturesService.findLectureById({
+              id: lecture_id,
+            });
+
+            const { email } = await this.usersService.findUserById({
+              id: user.id,
+              select: { email: true },
+            });
+
+            const splitedEmail = email.split('@');
+            const upload = await this.uploadService.uploadFile({
+              username: `${splitedEmail[0]}.${splitedEmail[1]}`,
+              file: req.file,
+            });
+            const new_video_url = upload['url'];
+
+            const dataWithVideoUrl = new UpdateLectureDataWithVideUrl({
+              ...data,
+              video_url: new_video_url,
+            });
+
+            const result = await this.lecturesService.updateLecutreWithVideoUrl(
+              {
+                where: { teacher_id: user.id, course_id, id: lecture_id },
+                data: dataWithVideoUrl,
+              },
+            );
+
+            // db 업데이트 성공하고 기존의 비디오가 존재하면 기존의 비디오 삭제
+            if (result && video_url) {
               await this.uploadService.deleteFile({
-                key: video_url!.split('.amazonaws.com/')[1],
+                key: video_url.split('.amazonaws.com/')[1],
               });
             }
+
+            return result;
           }
 
           const result = await this.lecturesService.updateLecutre({
             where: { teacher_id: user.id, course_id, id: lecture_id },
             data,
           });
+
           return result;
         }, res),
     );

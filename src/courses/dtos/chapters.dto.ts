@@ -1,9 +1,15 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsString } from 'class-validator';
 import { FindOptionsSelect } from 'typeorm';
 import Chapter from '../entities/chapter.entity';
 
 export class FindChaptersByCourseId {
   course_id: number;
+  select?: FindOptionsSelect<Chapter>;
+}
+
+export class FindChapterByChapterAndCourseId {
+  course_id: number;
+  chapter_id: number;
   select?: FindOptionsSelect<Chapter>;
 }
 
@@ -27,18 +33,27 @@ export class CreateChapterDTO {
 }
 
 export class UpdateChapterData {
-  constructor({ title, order }: UpdateChapterData) {
-    if (title) this.title = title;
-    if (order) this.order = order;
+  constructor({ title }: UpdateChapterData) {
+    this.title = title;
   }
 
   @IsString()
-  @IsOptional()
-  title?: string;
+  title: string;
+}
 
-  @IsNumber()
-  @IsOptional()
-  order?: number;
+export class UpdateChaptersOrderData {
+  constructor({ chapters }: UpdateChaptersOrderData) {
+    this.chapters = chapters;
+  }
+
+  @IsArray()
+  @IsNumber({}, { each: true })
+  chapters: number[];
+}
+
+export class UpdateChapterOrdersDTO {
+  teacher_id: number;
+  data: UpdateChaptersOrderData;
 }
 
 export class UpdateChapterDTO {

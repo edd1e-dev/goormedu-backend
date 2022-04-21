@@ -6,6 +6,7 @@ import {
   FindCoursesByIdsDTO,
   FindCoursesByQueryDTO,
   FindCoursesByTeacherIdDTO,
+  UpdateCourseWithCoverImageDTO,
 } from '@/courses/dtos/courses.dto';
 import { CreateCourseDTO, UpdateCourseDTO } from '@/courses/dtos/courses.dto';
 import { Repository, ILike, In } from 'typeorm';
@@ -90,17 +91,27 @@ export default class CoursesService implements IService {
   }
   async updateCourse({
     where,
-    data: { cover_image, ...rest },
+    data: { ...rest },
   }: UpdateCourseDTO): Promise<Course> {
     const course = await this.courseRepository.findOne({ where });
     if (!course) {
       throw new CustomError('코스가 존재하지 않습니다.');
     }
     for (const [key, val] of Object.entries(rest)) course[key] = val;
-    if (cover_image) {
-      // s3에서 기존 데이터 삭제 요청
-      course.cover_image = cover_image;
+    const result = await this.courseRepository.save(course);
+    return result;
+  }
+  async updateCourseWithCoverImage({
+    where,
+    data: { cover_image, ...rest },
+  }: UpdateCourseWithCoverImageDTO): Promise<Course> {
+    const course = await this.courseRepository.findOne({ where });
+    if (!course) {
+      throw new CustomError('코스가 존재하지 않습니다.');
     }
+    for (const [key, val] of Object.entries(rest)) course[key] = val;
+    course.cover_image = cover_image;
+
     const result = await this.courseRepository.save(course);
     return result;
   }

@@ -4,6 +4,7 @@ import {
   IsUrl,
   IsOptional,
   IsBoolean,
+  IsArray,
 } from 'class-validator';
 import { FindOptionsSelect } from 'typeorm';
 import Lecture from '../entities/lecture.entity';
@@ -31,16 +32,39 @@ export class FindLectureByIdDTO {
 }
 
 export class CreateLectureData {
+  constructor({ chapter_id, title, content, is_public }: CreateLectureData) {
+    this.chapter_id = chapter_id;
+    this.title = title;
+    if (content) this.content = content;
+    if (is_public) this.is_public = is_public;
+  }
+
+  @IsNumber()
+  chapter_id: number;
+
+  @IsString()
+  title: string;
+
+  @IsString()
+  @IsOptional()
+  content?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  is_public?: boolean;
+}
+
+export class CreateLectureDataWithVideoUrl {
   constructor({
     chapter_id,
     title,
     video_url,
     content,
     is_public,
-  }: CreateLectureData) {
+  }: CreateLectureDataWithVideoUrl) {
     this.chapter_id = chapter_id;
     this.title = title;
-    if (video_url) this.video_url = video_url;
+    this.video_url = video_url;
     if (content) this.content = content;
     if (is_public) this.is_public = is_public;
   }
@@ -52,8 +76,7 @@ export class CreateLectureData {
   title: string;
 
   @IsUrl()
-  @IsOptional()
-  video_url?: string;
+  video_url: string;
 
   @IsString()
   @IsOptional()
@@ -73,21 +96,65 @@ export class CreateLectureDTO {
   data: CreateLectureData;
 }
 
+export class CreateLectureWithVideoUrlDTO {
+  where: {
+    teacher_id: number;
+    course_id: number;
+    order: number;
+  };
+  data: CreateLectureDataWithVideoUrl;
+}
+
 export class UpdateLectureData {
+  constructor({
+    chapter_id,
+    title,
+    content,
+    is_public,
+    order,
+  }: UpdateLectureData) {
+    if (chapter_id) this.chapter_id = chapter_id;
+    if (title) this.title = title;
+    if (content) this.content = content;
+    if (is_public) this.is_public = is_public;
+    if (order || order === 0) this.order = order;
+  }
+
+  @IsNumber()
+  @IsOptional()
+  chapter_id?: number;
+
+  @IsString()
+  @IsOptional()
+  title?: string;
+
+  @IsString()
+  @IsOptional()
+  content?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  is_public?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  order?: number;
+}
+export class UpdateLectureDataWithVideUrl {
   constructor({
     chapter_id,
     title,
     video_url,
     content,
-    order,
     is_public,
-  }: UpdateLectureData) {
+    order,
+  }: UpdateLectureDataWithVideUrl) {
+    this.video_url = video_url;
     if (chapter_id) this.chapter_id = chapter_id;
     if (title) this.title = title;
-    if (order) this.order = order;
-    if (video_url) this.video_url = video_url;
     if (content) this.content = content;
     if (is_public) this.is_public = is_public;
+    if (order) this.order = order;
   }
 
   @IsNumber()
@@ -99,20 +166,19 @@ export class UpdateLectureData {
   title?: string;
 
   @IsUrl()
-  @IsOptional()
-  video_url?: string;
+  video_url: string;
 
   @IsString()
   @IsOptional()
   content?: string;
 
-  @IsNumber()
-  @IsOptional()
-  order?: number;
-
   @IsBoolean()
   @IsOptional()
   is_public?: boolean;
+
+  @IsNumber()
+  @IsOptional()
+  order?: number;
 }
 
 export class UpdateLectureDTO {
@@ -120,9 +186,24 @@ export class UpdateLectureDTO {
   data: UpdateLectureData;
 }
 
-export class UpdateChapterlessLecutreDTO {
-  chapter_id: number;
+export class UpdateLectureWithVideoUrlDTO {
+  where: { id: number; teacher_id: number; course_id: number };
+  data: UpdateLectureDataWithVideUrl;
+}
+
+export class UpdateLecturesOrderData {
+  constructor({ lectures }: UpdateLecturesOrderData) {
+    this.lectures = lectures;
+  }
+
+  @IsArray()
+  @IsNumber({}, { each: true })
+  lectures: number[];
+}
+
+export class UpdateLectureOrdersDTO {
   teacher_id: number;
+  data: UpdateLecturesOrderData;
 }
 
 export class DeleteLectureDTO {
