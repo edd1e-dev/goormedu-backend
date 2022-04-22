@@ -114,7 +114,7 @@ export default class LecturesService implements IService {
           });
 
           if (!lecture) throw new CustomError('강의가 존재하지 않습니다.');
-          lecture.order = i;
+          lecture.order = i + 1;
           await transactionalEntityManager.save(lecture);
         }
       },

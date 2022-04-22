@@ -117,7 +117,7 @@ export class UpdateLectureData {
     if (title) this.title = title;
     if (content) this.content = content;
     if (is_public) this.is_public = is_public;
-    if (order || order === 0) this.order = order;
+    if (order) this.order = order;
   }
 
   @IsNumber()

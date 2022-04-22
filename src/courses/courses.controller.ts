@@ -539,7 +539,7 @@ export default class CoursesController implements IController {
           orders.push(chapter.order);
         });
 
-        const order = orders.length > 0 ? Math.max(...orders) + 1 : 0;
+        const order = orders.length > 0 ? Math.max(...orders) + 1 : 1;
 
         const result = await this.chaptersService.createChapter({
           where: {
@@ -716,7 +716,7 @@ export default class CoursesController implements IController {
             orders.push(lecture.order);
           });
 
-          const order = orders.length > 0 ? Math.max(...orders) + 1 : 0;
+          const order = orders.length > 0 ? Math.max(...orders) + 1 : 1;
 
           // req.file이 있을 경우
           if (req.file) {
@@ -863,7 +863,7 @@ export default class CoursesController implements IController {
               orders.push(lecture.order);
             });
 
-            order = orders.length > 0 ? Math.max(...orders) + 1 : 0;
+            order = orders.length > 0 ? Math.max(...orders) + 1 : 1;
           }
 
           const data = new UpdateLectureData({

@@ -74,7 +74,7 @@ export default class ChaptersService implements IService {
           });
 
           if (!chapter) throw new CustomError('챕터가 존재하지 않습니다.');
-          chapter.order = i;
+          chapter.order = i + 1;
           await transactionalEntityManager.save(chapter);
         }
       },
