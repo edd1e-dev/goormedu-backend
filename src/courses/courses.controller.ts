@@ -585,13 +585,17 @@ export default class CoursesController implements IController {
           return chapter.id;
         });
 
-        if (!(data.chapters.length === chapter_records_ids.length)) {
+        if (data.chapters.length !== chapter_records_ids.length) {
           throw new CustomError('잘못된 값이 입력되었습니다.');
         }
         if (
-          ![...data.chapters].sort().every(function (value, index) {
-            return value === [...chapter_records_ids].sort()[index];
-          })
+          ![...data.chapters]
+            .sort((a, b) => a - b)
+            .every(function (value, index) {
+              return (
+                value === [...chapter_records_ids].sort((a, b) => a - b)[index]
+              );
+            })
         ) {
           throw new CustomError('잘못된 값이 입력되었습니다.');
         }
@@ -790,14 +794,19 @@ export default class CoursesController implements IController {
             return lecture.id;
           });
 
-          if (!(data.lectures.length === lecture_records_ids.length)) {
+          if (data.lectures.length !== lecture_records_ids.length) {
             throw new CustomError('잘못된 값이 입력되었습니다.');
           }
 
           if (
-            ![...data.lectures].sort().every(function (value, index) {
-              return value === [...lecture_records_ids].sort()[index];
-            })
+            ![...data.lectures]
+              .sort((a, b) => a - b)
+              .every(function (value, index) {
+                return (
+                  value ===
+                  [...lecture_records_ids].sort((a, b) => a - b)[index]
+                );
+              })
           ) {
             throw new CustomError('잘못된 값이 입력되었습니다.');
           }
@@ -859,7 +868,7 @@ export default class CoursesController implements IController {
 
             const orders: number[] = [];
 
-            lectures.map((lecture) => {
+            lectures.forEach((lecture) => {
               orders.push(lecture.order);
             });
 
