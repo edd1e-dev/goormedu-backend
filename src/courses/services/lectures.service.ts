@@ -3,13 +3,15 @@ import { CustomError, IService } from '@/commons/interfaces';
 import { Repository } from 'typeorm';
 import {
   CreateLectureDTO,
+  CreateLectureWithVideoUrlDTO,
   DeleteLectureDTO,
   DeleteLecturesDTO,
   FindLectureByIdDTO,
   FindLecturesByChapterIdDTO,
   FindTempLecturesByCourseIdDTO,
-  UpdateChapterlessLecutreDTO,
   UpdateLectureDTO,
+  UpdateLectureWithVideoUrlDTO,
+  UpdateLectureOrdersDTO,
 } from '../dtos/lectures.dto';
 import Lecture from '../entities/lecture.entity';
 
@@ -22,7 +24,7 @@ export default class LecturesService implements IService {
 
   async findTempLecturesByCourseId({
     where,
-    select
+    select,
   }: FindTempLecturesByCourseIdDTO): Promise<Lecture[]> {
     const result = await this.lectureRepository.find({
       where: { ...where, chapter_id: 0 },
@@ -52,8 +54,18 @@ export default class LecturesService implements IService {
     if (!result) throw new CustomError('강의가 존재하지 않습니다.');
     return result;
   }
-  
+
   async createLecture({ where, data }: CreateLectureDTO): Promise<Lecture> {
+    const result = await this.lectureRepository.save(
+      this.lectureRepository.create({ ...where, ...data }),
+    );
+    return result;
+  }
+
+  async createLectureWithVideoUrl({
+    where,
+    data,
+  }: CreateLectureWithVideoUrlDTO): Promise<Lecture> {
     const result = await this.lectureRepository.save(
       this.lectureRepository.create({ ...where, ...data }),
     );
@@ -62,35 +74,52 @@ export default class LecturesService implements IService {
 
   async updateLecutre({
     where,
-    data: { video_url, ...rest },
+    data: { ...rest },
   }: UpdateLectureDTO): Promise<Lecture> {
     const lecture = await this.lectureRepository.findOne({ where });
     if (!lecture) throw new CustomError('강의가 존재하지 않습니다.');
 
     for (const [key, val] of Object.entries(rest)) lecture[key] = val;
-    if (video_url) {
-      // 기존의 영상 데이터를 s3에서 제거 요청
-      lecture.video_url = video_url;
-    }
 
     const result = await this.lectureRepository.save(lecture);
     return result;
   }
 
-  async updateChapterlessLectures({
-    chapter_id,
-    teacher_id
-  }: UpdateChapterlessLecutreDTO): Promise<Lecture[]> {
-    const lectures = await this.lectureRepository.find({
-      where: {chapter_id, teacher_id}
-    });
-    
-    for (const [_, lecture] of Object.entries(lectures)) {
-      lecture.chapter_id = 0;
-    }
+  async updateLecutreWithVideoUrl({
+    where,
+    data: { video_url, ...rest },
+  }: UpdateLectureWithVideoUrlDTO): Promise<Lecture> {
+    const lecture = await this.lectureRepository.findOne({ where });
+    if (!lecture) throw new CustomError('강의가 존재하지 않습니다.');
 
-    const result = await this.lectureRepository.manager.save(lectures);
+    for (const [key, val] of Object.entries(rest)) lecture[key] = val;
+    lecture.video_url = video_url;
+
+    const result = await this.lectureRepository.save(lecture);
     return result;
+  }
+
+  async updateLectureOrders({
+    teacher_id,
+    data,
+  }: UpdateLectureOrdersDTO): Promise<number[]> {
+    const lectures = data.lectures;
+
+    await this.lectureRepository.manager.transaction(
+      'SERIALIZABLE',
+      async (transactionalEntityManager) => {
+        for (let i = 0; i < lectures.length; i++) {
+          const lecture = await this.lectureRepository.findOne({
+            where: { teacher_id, id: lectures[i] },
+          });
+
+          if (!lecture) throw new CustomError('강의가 존재하지 않습니다.');
+          lecture.order = i + 1;
+          await transactionalEntityManager.save(lecture);
+        }
+      },
+    );
+    return lectures;
   }
 
   async deleteLecture(dto: DeleteLectureDTO): Promise<DeleteLectureDTO> {

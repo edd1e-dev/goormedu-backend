@@ -11,13 +11,36 @@ import { FindOptionsSelect } from 'typeorm';
 import Course from '../entities/course.entity';
 
 export class CreateCourseData {
+  constructor({ category_id, title, description, level }: CreateCourseData) {
+    this.category_id = category_id;
+    this.description = description;
+    this.level = level;
+    this.title = title;
+  }
+
+  @IsNumber()
+  category_id: number;
+
+  @IsString()
+  title: string;
+
+  @IsString()
+  description: string;
+
+  @IsInt()
+  @Max(5)
+  @Min(1)
+  level: number;
+}
+
+export class CreateCourseDataWithCoverImage {
   constructor({
     category_id,
     title,
     description,
     level,
     cover_image,
-  }: CreateCourseData) {
+  }: CreateCourseDataWithCoverImage) {
     this.category_id = category_id;
     this.cover_image = cover_image;
     this.description = description;
@@ -45,19 +68,12 @@ export class CreateCourseData {
 
 export class CreateCourseDTO {
   teacher_id: number;
-  data: CreateCourseData;
+  data: CreateCourseDataWithCoverImage;
 }
 
 export class UpdateCourseData {
-  constructor({
-    category_id,
-    title,
-    description,
-    level,
-    cover_image,
-  }: UpdateCourseData) {
+  constructor({ category_id, title, description, level }: UpdateCourseData) {
     if (category_id) this.category_id = category_id;
-    if (cover_image) this.cover_image = cover_image;
     if (description) this.description = description;
     if (level) this.level = level;
     if (title) this.title = title;
@@ -80,10 +96,43 @@ export class UpdateCourseData {
   @Min(1)
   @IsOptional()
   level?: number;
+}
+
+export class UpdateCourseDataWithCoverImage {
+  constructor({
+    category_id,
+    title,
+    description,
+    level,
+    cover_image,
+  }: UpdateCourseDataWithCoverImage) {
+    if (category_id) this.category_id = category_id;
+    if (description) this.description = description;
+    if (level) this.level = level;
+    if (title) this.title = title;
+    this.cover_image = cover_image;
+  }
+
+  @IsNumber()
+  @IsOptional()
+  category_id?: number;
+
+  @IsString()
+  @IsOptional()
+  title?: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @IsInt()
+  @Max(5)
+  @Min(1)
+  @IsOptional()
+  level?: number;
 
   @IsUrl()
-  @IsOptional()
-  cover_image?: string;
+  cover_image: string;
 }
 
 export class UpdateCourseDTO {
@@ -92,6 +141,14 @@ export class UpdateCourseDTO {
     teacher_id: number;
   };
   data: UpdateCourseData;
+}
+
+export class UpdateCourseWithCoverImageDTO {
+  where: {
+    id: number;
+    teacher_id: number;
+  };
+  data: UpdateCourseDataWithCoverImage;
 }
 
 export class FindAllCoursesDTO {

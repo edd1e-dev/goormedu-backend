@@ -7,7 +7,9 @@ import {
   DeleteChaptersDTO,
   DeleteChapterDTO,
   FindChaptersByCourseId,
+  FindChapterByChapterAndCourseId,
   UpdateChapterDTO,
+  UpdateChapterOrdersDTO,
 } from '../dtos/chapters.dto';
 
 export default class ChaptersService implements IService {
@@ -28,6 +30,19 @@ export default class ChaptersService implements IService {
     return result;
   }
 
+  async findChapterByChapterAndCourseId({
+    chapter_id,
+    course_id,
+    select,
+  }: FindChapterByChapterAndCourseId): Promise<Chapter> {
+    const result = await this.chapterRepository.findOne({
+      where: { id: chapter_id, course_id },
+      ...(select && { select }),
+    });
+    if (!result) throw new CustomError('해당 챕터가 코스에 존재하지 않습니다.');
+    return result;
+  }
+
   async createChapter({ where, data }: CreateChapterDTO): Promise<Chapter> {
     const result = await this.chapterRepository.save(
       this.chapterRepository.create({ ...where, ...data }),
@@ -43,6 +58,28 @@ export default class ChaptersService implements IService {
     }
     const result = await this.chapterRepository.save(chapter);
     return result;
+  }
+  async updateChapterOrders({
+    teacher_id,
+    data,
+  }: UpdateChapterOrdersDTO): Promise<number[]> {
+    const chpters = data.chapters;
+
+    await this.chapterRepository.manager.transaction(
+      'SERIALIZABLE',
+      async (transactionalEntityManager) => {
+        for (let i = 0; i < chpters.length; i++) {
+          const chapter = await this.chapterRepository.findOne({
+            where: { teacher_id, id: chpters[i] },
+          });
+
+          if (!chapter) throw new CustomError('챕터가 존재하지 않습니다.');
+          chapter.order = i + 1;
+          await transactionalEntityManager.save(chapter);
+        }
+      },
+    );
+    return chpters;
   }
   async deleteChapter(dto: DeleteChapterDTO): Promise<DeleteChapterDTO> {
     await this.chapterRepository.delete(dto);

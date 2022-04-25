@@ -69,9 +69,7 @@ export default class UsersController implements IController {
   }
 
   getRouter() {
-    this.router.use(JwtGuard);
-
-    this.router.get('/profile', (req, res) =>
+    this.router.get('/profile', JwtGuard, (req, res) =>
       this.getApi(async () => {
         const user = new JwtPayload(req.user as Express.User);
         await validateOrReject(user, { whitelist: true });
@@ -102,7 +100,7 @@ export default class UsersController implements IController {
       ),
     );
 
-    this.router.post('/:user_id/delete', (req, res) =>
+    this.router.post('/:user_id/delete', JwtGuard, (req, res) =>
       this.getApi(async () => {
         const user = new JwtPayload(req.user as Express.User);
         await validateOrReject(user, { whitelist: true });
@@ -132,6 +130,7 @@ export default class UsersController implements IController {
 
     this.router.post(
       '/:user_id/role/:role/update',
+      JwtGuard,
       RoleGuard(UserRole.Admin),
       (req, res) =>
         this.getApi(async () => {
