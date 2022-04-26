@@ -885,9 +885,14 @@ export default class CoursesController implements IController {
             throw new CustomError('순서는 이 방식으로 변경 할 수 없습니다.');
           }
 
+          const originLecture = await this.lecturesService.findLectureById({
+            id: lecture_id,
+            select: { chapter_id: true },
+          });
+
           let order: number | null = null;
 
-          if (chapter_id) {
+          if (chapter_id && originLecture.chapter_id !== chapter_id) {
             await this.chaptersService.findChapterByChapterAndCourseId({
               course_id,
               chapter_id,
