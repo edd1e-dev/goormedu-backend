@@ -93,7 +93,7 @@ export default class LecturesService implements IService {
     if (!lecture) throw new CustomError('강의가 존재하지 않습니다.');
 
     for (const [key, val] of Object.entries(rest)) lecture[key] = val;
-    lecture.video_url = video_url;
+    lecture.video_url = video_url ? video_url : undefined;
 
     const result = await this.lectureRepository.save(lecture);
     return result;
