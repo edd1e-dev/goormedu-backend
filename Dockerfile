@@ -8,6 +8,7 @@ WORKDIR /usr/src/app
 COPY package*.json tsconfig*.json ./
 RUN npm ci && npm cache clean -f
 COPY ./src ./src
+RUN npm install pm2 -g
 RUN npm run build
 
 FROM node:16.14.2-alpine
@@ -20,4 +21,4 @@ COPY --from=builder /usr/src/app ./
 EXPOSE 4000
 
 # ENTRYPOINT 와 CMD는 리스트 포맷 ( ["args1", "args2",...] )으로 정의해 주는게 좋다. 
-CMD [ "npm", "run", "start" ]
+CMD [ "pm2", "start", "src/commons/ecosystem.config.js" ]
