@@ -8,7 +8,6 @@ WORKDIR /usr/src/app
 COPY package*.json tsconfig*.json ./
 RUN npm ci && npm cache clean -f
 COPY ./src ./src
-RUN npm install pm2 -g
 RUN npm run build
 
 FROM node:16.14.2-alpine
@@ -17,6 +16,7 @@ RUN apk add --no-cache tini
 ENTRYPOINT ["/sbin/tini", "--"]
 WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app ./
+RUN npm install pm2 -g
 
 EXPOSE 4000
 
