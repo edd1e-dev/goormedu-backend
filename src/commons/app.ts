@@ -9,10 +9,16 @@ import GoogleStrategy from '../auth/google.strategy';
 import JwtStrategy from '@/jwt/jwt.strategy';
 import globalRouter from './globalRouter';
 import * as Sentry from '@sentry/node';
+import { CaptureConsole } from '@sentry/integrations';
 
 Sentry.init({
   dsn: env.SENTRY_DSN,
   tracesSampleRate: 1.0,
+  integrations: [
+    new CaptureConsole({
+      levels: ['log', 'info', 'warn', 'error', 'debug', 'assert'],
+    }),
+  ],
 });
 
 const app = express();
