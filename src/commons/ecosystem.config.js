@@ -7,7 +7,7 @@ module.exports = {
     apps : [
         {
             name: "goormedu-clone",
-            script: "build/app.js",
+            script: "build/index.js",
             // watch: true, // automatically restart your application when a file is modified in the current directory or its subdirectories
             //instances: 0, // to spread the app across all CPUs - 1
             // exec_mode : "cluster", // PM2 know you want to load balance between each instances
