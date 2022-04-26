@@ -117,6 +117,7 @@ export default class CoursesController implements IController {
           : { ok: false, error: '요청 결과를 불러오지 못했습니다.' },
       );
     } catch (e) {
+      console.log(e);
       let error = CustomError.UnExpectedErrorMessage;
       if (e.name === CustomError.ErrorType) error = e.message;
       return res.send({ ok: false, error });
