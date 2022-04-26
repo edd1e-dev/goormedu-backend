@@ -12,7 +12,7 @@ const GoogleStrategy = new Strategy(
   {
     clientID: env.GOOGLE_CLIENT_ID,
     clientSecret: env.GOOGLE_SECRET,
-    callbackURL: `http://${env.DOMAIN}/auth/google/oauth`, // ${env.PORT}
+    callbackURL: `https://${env.DOMAIN}/auth/google/oauth`, // ${env.PORT}
     scope: ['profile', 'email'],
   },
   (_, __, profile, done) => {

@@ -71,17 +71,17 @@ export default class AuthController implements IController {
           const token = await this.jwtService.sign(payload);
           return res
             .cookie('jwt', token, JwtService.jwtCookieOptions)
-            .redirect(env.CLIENT_DOMAIN);
+            .redirect(`https://${env.CLIENT_DOMAIN}`);
         } catch {
           // 로그인 실패를 나타내는 페이지로 이동
-          return res.redirect(env.CLIENT_DOMAIN);
+          return res.redirect(`https://${env.CLIENT_DOMAIN}`);
         }
       },
     );
 
     this.router.get('/logout', JwtGuard, (req, res) => {
       res.clearCookie('jwt');
-      return res.redirect(env.CLIENT_DOMAIN);
+      return res.redirect(`https://${env.CLIENT_DOMAIN}`);
     });
 
     return this.router;

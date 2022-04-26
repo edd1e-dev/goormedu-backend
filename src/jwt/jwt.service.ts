@@ -17,7 +17,11 @@ export default class JwtService implements IService {
     encode?: ((val: string) => string) | undefined;
     sameSite?: boolean | 'lax' | 'strict' | 'none' | undefined;
    */
-  public static readonly jwtCookieOptions: CookieOptions = { httpOnly: true };
+  public static readonly jwtCookieOptions: CookieOptions = {
+    httpOnly: true,
+    secure: true,
+    domain: env.CLIENT_DOMAIN,
+  };
 
   private static readonly privateKey: string = env.JWT_PRIVATEKEY;
   constructor() {}

@@ -32,7 +32,7 @@ passport.use(JwtStrategy);
 
 app.use(
   cors({
-    origin: env.CLIENT_DOMAIN,
+    origin: `https://${env.CLIENT_DOMAIN}`,
     credentials: true,
   }),
 );
