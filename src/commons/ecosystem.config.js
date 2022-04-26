@@ -14,14 +14,6 @@ module.exports = {
             wait_ready: true, // Sometimes you might need to wait for your application to have etablished connections with your DBs/caches/workers/whatever. PM2 needs to wait, before considering your application as online
             listen_timeout: 50000, // PM2 wait 50000ms for the ready signal.
             kill_timeout: 5000, // PM2 will wait 5000ms before sending a final SIGKILL signal
-            env: {
-                "PORT": 3000,
-                "NODE_ENV": "development"
-            },
-            env_production: {
-                "PORT": 3000,
-                "NODE_ENV": "production",
-            }
         }
     ]
 }
