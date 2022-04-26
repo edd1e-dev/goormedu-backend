@@ -2,14 +2,10 @@ import env from './commons/config';
 import app from './commons/app';
 import AppDataSource from './commons/db';
 
-let isDisableKeepAlive = false;
-
-app.use((_, res, next) => {
-  if (isDisableKeepAlive) {
-    res.set('Connection', 'close');
-  }
-  next();
-})
+process.on('SIGINT', () => {
+  // app.close();
+  process.exit(0);
+});
 
 AppDataSource.initialize()
   .then(() => {
@@ -19,13 +15,4 @@ AppDataSource.initialize()
       })
     }
   )
-  .catch((e) => console.log(`❌ DB connection fail: ${e}`)).finally(() => {
-      process.on('SIGINT', () => {
-        isDisableKeepAlive = true;
-        app.on('exit', () => {
-          console.log('Server closed');
-          process.exit(0);
-        })
-      });
-    }
-  );
+  .catch((e) => console.log(`❌ DB connection fail: ${e}`));
