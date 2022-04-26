@@ -80,7 +80,7 @@ export default class AuthController implements IController {
     );
 
     this.router.get('/logout', JwtGuard, (req, res) => {
-      res.clearCookie('jwt');
+      res.clearCookie('jwt', { domain: '.goormedu-clone.com', path: '/' });
       return res.redirect(`https://${env.CLIENT_DOMAIN}`);
     });
 
