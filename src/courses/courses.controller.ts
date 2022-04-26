@@ -455,6 +455,29 @@ export default class CoursesController implements IController {
         return result;
       }, res),
     ); // 강의 이수를 위한 강의 상세 정보 불러오기,
+    this.router.post('/:course_id/lectures/:lecture_id/start', (req, res) =>
+      this.getApi(async () => {
+        const user = new JwtPayload(req.user as Express.User);
+        await validateOrReject(user, { whitelist: true });
+
+        const course_id = parseInt(req.params.course_id);
+        const lecture_id = parseInt(req.params.lecture_id);
+
+        await this.learnRecordsService.findLearnRecord({
+          where: { student_id: user.id, course_id },
+        }); // 수강 기록이 존재하지 않으면 에러 반환
+
+        const result = await this.learnRecordsService.updateLearnRecord({
+          where: { student_id: user.id, course_id },
+          data: {
+            last_lecture_id: lecture_id,
+            last_learning_date: new Date(),
+          },
+        });
+
+        return result;
+      }, res),
+    ); // 강의를 수강할 때 learn-record에 last_lecture_id와 last_learning_date 업데이트
 
     this.router.get('/:course_id/learn-record', (req, res) =>
       this.getApi(async () => {
@@ -552,7 +575,7 @@ export default class CoursesController implements IController {
         return result;
       }, res),
     );
-    this.router.post('/:course_id/chapters/update', (req, res) =>
+    this.router.post('/:course_id/chapters/sort', (req, res) =>
       this.getApi(async () => {
         const user = new JwtPayload(req.user as Express.User);
         await validateOrReject(user, { whitelist: true });
@@ -759,7 +782,7 @@ export default class CoursesController implements IController {
         }, res),
     );
     this.router.post(
-      '/:course_id/chapters/:chapter_id/lectures/update',
+      '/:course_id/chapters/:chapter_id/lectures/sort',
       (req, res) =>
         this.getApi(async () => {
           const user = new JwtPayload(req.user as Express.User);
@@ -845,6 +868,16 @@ export default class CoursesController implements IController {
               ? JSON.parse(req.body.is_public)
               : null;
 
+          const delete_content =
+            req.body.delete_content && req.body.delete_content === 'true'
+              ? JSON.parse(req.body.delete_content)
+              : null;
+
+          const delete_video =
+            req.body.delete_video && req.body.delete_video === 'true'
+              ? JSON.parse(req.body.delete_video)
+              : null;
+
           // 변경할 챕터 id가 있으면 order값 계산해서 data검증에 넣어줌
 
           if (req.body.order) {
@@ -888,19 +921,31 @@ export default class CoursesController implements IController {
             throw new CustomError('잘못된 값이 입력되었습니다.');
           }
 
-          // req.file이 있을 경우
-          if (req.file) {
-            // 아래 video_url은 없을 수도 있음 -> 만들 때 video파일은 option이라서
-            const { video_url } = await this.lecturesService.findLectureById({
-              id: lecture_id,
-            });
+          if (delete_content) {
+            data.content = null;
+          }
 
-            const { email } = await this.usersService.findUserById({
-              id: user.id,
-              select: { email: true },
-            });
+          // 아래 video_url은 없을 수도 있음 -> 만들 때 video파일은 option이라서
+          const { video_url } = await this.lecturesService.findLectureById({
+            id: lecture_id,
+          });
 
-            const splitedEmail = email.split('@');
+          const { email } = await this.usersService.findUserById({
+            id: user.id,
+            select: { email: true },
+          });
+
+          const splitedEmail = email.split('@');
+
+          if (delete_video && video_url) {
+            await this.uploadService.deleteFile({
+              key: video_url.split('.amazonaws.com/')[1],
+            });
+            data.video_url = null;
+          }
+
+          // req.file이 존재하고 delete_video가 true가 아닐 경우
+          if (req.file && !delete_video) {
             const upload = await this.uploadService.uploadFile({
               username: `${splitedEmail[0]}.${splitedEmail[1]}`,
               file: req.file,
@@ -911,6 +956,10 @@ export default class CoursesController implements IController {
               ...data,
               video_url: new_video_url,
             });
+
+            if (delete_content) {
+              dataWithVideoUrl.content = null;
+            }
 
             const result = await this.lecturesService.updateLecutreWithVideoUrl(
               {
@@ -948,17 +997,22 @@ export default class CoursesController implements IController {
           const lecture_id = parseInt(req.params.lecture_id);
 
           // 강의 비디오 삭제
-          const { video_url } = await this.lecturesService.findLectureById({
-            id: lecture_id,
-            select: { video_url: true },
-          });
-          await this.uploadService.deleteFile({
-            key: video_url!.split('.amazonaws.com/')[1],
-          });
+          const { video_url, chapter_id } =
+            await this.lecturesService.findLectureById({
+              id: lecture_id,
+              select: { video_url: true, chapter_id: true },
+            });
+
+          if (video_url) {
+            await this.uploadService.deleteFile({
+              key: video_url.split('.amazonaws.com/')[1],
+            });
+          }
 
           const result = await this.lecturesService.deleteLecture({
             id: lecture_id,
             teacher_id: user.id,
+            chapter_id,
             course_id,
           });
 

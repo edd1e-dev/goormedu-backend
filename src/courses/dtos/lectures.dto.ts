@@ -112,11 +112,12 @@ export class UpdateLectureData {
     content,
     is_public,
     order,
+    video_url,
   }: UpdateLectureData) {
     if (chapter_id) this.chapter_id = chapter_id;
     if (title) this.title = title;
     if (content) this.content = content;
-    if (is_public) this.is_public = is_public;
+    if (is_public === true || is_public === false) this.is_public = is_public;
     if (order) this.order = order;
   }
 
@@ -130,7 +131,7 @@ export class UpdateLectureData {
 
   @IsString()
   @IsOptional()
-  content?: string;
+  content?: string | null;
 
   @IsBoolean()
   @IsOptional()
@@ -139,6 +140,9 @@ export class UpdateLectureData {
   @IsNumber()
   @IsOptional()
   order?: number;
+
+  @IsOptional()
+  video_url?: string | null;
 }
 export class UpdateLectureDataWithVideUrl {
   constructor({
@@ -153,7 +157,7 @@ export class UpdateLectureDataWithVideUrl {
     if (chapter_id) this.chapter_id = chapter_id;
     if (title) this.title = title;
     if (content) this.content = content;
-    if (is_public) this.is_public = is_public;
+    if (is_public === true || is_public === false) this.is_public = is_public;
     if (order) this.order = order;
   }
 
@@ -166,11 +170,11 @@ export class UpdateLectureDataWithVideUrl {
   title?: string;
 
   @IsUrl()
-  video_url: string;
+  video_url: string | null;
 
   @IsString()
   @IsOptional()
-  content?: string;
+  content?: string | null;
 
   @IsBoolean()
   @IsOptional()
@@ -210,4 +214,5 @@ export class DeleteLectureDTO {
   id: number;
   teacher_id: number;
   course_id: number;
+  chapter_id: number;
 }
