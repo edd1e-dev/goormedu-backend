@@ -19,7 +19,8 @@ export interface IEnv {
   DB_DATABASE: string;
 
   AWS_REGION: string;
-  AWS_S3: string;
+  AWS_S3_DATA_BUCKET: string;
+  AWS_S3_VIDEO_BUCKET: string;
   AWS_CLIENT_ID: string;
   AWS_SECRET: string;
   SENTRY_DSN: string;

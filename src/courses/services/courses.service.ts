@@ -32,10 +32,11 @@ export default class CoursesService implements IService {
     query,
     select,
   }: FindCoursesByQueryDTO): Promise<Course[]> {
-    const key = query.trim().replace(/ +/g, ' ');
-    if (key === ' ') return [];
+    const key = query.replace(/\"/gi, '').trim().replace(/ /gi, '%');
+    if (key === '') return [];
+    console.log(key);
     const result = await this.courseRepository.find({
-      where: { title: ILike(`%${key} #%`) },
+      where: [{ title: ILike(`%${key}%`) }, { description: ILike(`%${key}%`) }],
       ...(select && { select }),
     });
     return result;

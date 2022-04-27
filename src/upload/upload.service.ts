@@ -23,9 +23,13 @@ export default class UploadService implements IService {
     username,
     file,
   }: UploadFileDTO): Promise<PutObjectCommandOutput> {
+    const bucket =
+      file.fieldname === 'lecture_video'
+        ? env.AWS_S3_VIDEO_BUCKET
+        : env.AWS_S3_DATA_BUCKET;
     const now = Date.now();
     const result = await this.s3.putObject({
-      Bucket: env.AWS_S3,
+      Bucket: bucket,
       Key: `${file.fieldname}/${username}/${now}`,
       ACL: 'public-read',
       ContentType: file.mimetype,
@@ -43,7 +47,7 @@ export default class UploadService implements IService {
     } else {
       result[
         'url'
-      ] = `https://${env.AWS_S3}.s3.${env.AWS_REGION}.amazonaws.com/${file.fieldname}/${username}/${now}`;
+      ] = `https://${bucket}.s3.${env.AWS_REGION}.amazonaws.com/${file.fieldname}/${username}/${now}`;
     }
 
     return result;
@@ -51,7 +55,22 @@ export default class UploadService implements IService {
 
   async deleteFile({ key }: DeleteFileDTO): Promise<DeleteObjectCommandOutput> {
     const result = await this.s3.deleteObject({
-      Bucket: env.AWS_S3,
+      Bucket: env.AWS_S3_DATA_BUCKET,
+      Key: key,
+    });
+
+    if (!result) {
+      throw new CustomError('파일 삭제에 실패했습니다.');
+    }
+
+    return result;
+  }
+
+  async deleteVideoFile({
+    key,
+  }: DeleteFileDTO): Promise<DeleteObjectCommandOutput> {
+    const result = await this.s3.deleteObject({
+      Bucket: env.AWS_S3_VIDEO_BUCKET,
       Key: key,
     });
 
