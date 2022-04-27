@@ -33,6 +33,18 @@ export default class CompletionRecordsService implements IService {
     return result;
   }
 
+  async checkCompletionRecord({
+    where,
+    select,
+  }: FindCompletionRecordDTO): Promise<CompletionRecord | null> {
+    const result = await this.completionRecordRepository.findOne({
+      where,
+      ...(select && { select }),
+    });
+
+    return result;
+  }
+
   async createCompletionRecord(
     dto: CreateCompletionRecordDTO,
   ): Promise<CompletionRecord> {
@@ -57,10 +69,10 @@ export default class CompletionRecordsService implements IService {
     where: DeleteCompletionRecordDTO,
   ): Promise<{ lecture_id }> {
     const { lecture_id } = where;
-    await this.completionRecordRepository.delete({lecture_id});
+    await this.completionRecordRepository.delete({ lecture_id });
     return { lecture_id };
   }
-  
+
   async deleteCompletionRecordByStudentId({
     student_id,
   }: DeleteCompletionRecordByStudentIdDTO): Promise<{ student_id }> {

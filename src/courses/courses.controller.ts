@@ -416,6 +416,16 @@ export default class CoursesController implements IController {
         });
         // 수강 기록이 존재하지 않으면 에러 반환
 
+        // 이미 완료한 강의면 에러 반환
+        const record =
+          await this.completionRecordsService.checkCompletionRecord({
+            where: { student_id: user.id, lecture_id, course_id },
+            select: CoursesController.completionRecordSelect,
+          });
+
+        if (record) {
+          throw new CustomError('이미 완료한 강의입니다.');
+        }
         const result =
           await this.completionRecordsService.createCompletionRecord({
             student_id: user.id,
@@ -754,10 +764,13 @@ export default class CoursesController implements IController {
             });
 
             const splitedEmail = email.split('@');
+            const username = `${splitedEmail[0]}.${splitedEmail[1]}`;
+
             const upload = await this.uploadService.uploadFile({
-              username: `${splitedEmail[0]}.${splitedEmail[1]}`,
+              username,
               file: req.file,
             });
+
             const video_url = upload['url'];
 
             const dataWithVideoUrl = new CreateLectureDataWithVideoUrl({
@@ -869,14 +882,15 @@ export default class CoursesController implements IController {
               ? JSON.parse(req.body.is_public)
               : null;
 
-          const delete_content =
-            req.body.delete_content && req.body.delete_content === 'true'
-              ? JSON.parse(req.body.delete_content)
+          const content_exist =
+            req.body.content_exist === 'true' ||
+            req.body.content_exist === 'false'
+              ? JSON.parse(req.body.content_exist)
               : null;
 
-          const delete_video =
-            req.body.delete_video && req.body.delete_video === 'true'
-              ? JSON.parse(req.body.delete_video)
+          const video_exist =
+            req.body.video_exist === 'true' || req.body.video_exist === 'false'
+              ? JSON.parse(req.body.video_exist)
               : null;
 
           // 변경할 챕터 id가 있으면 order값 계산해서 data검증에 넣어줌
@@ -927,7 +941,7 @@ export default class CoursesController implements IController {
             throw new CustomError('잘못된 값이 입력되었습니다.');
           }
 
-          if (delete_content) {
+          if (!content_exist) {
             data.content = null;
           }
 
@@ -942,20 +956,28 @@ export default class CoursesController implements IController {
           });
 
           const splitedEmail = email.split('@');
+          const username = `${splitedEmail[0]}.${splitedEmail[1]}`;
 
-          if (delete_video && video_url) {
+          if (!video_exist && video_url) {
+            const splitedUrl = video_url.split('/');
+
+            const key = `${splitedUrl[splitedUrl.length - 4]}/${
+              splitedUrl[splitedUrl.length - 3]
+            }/${splitedUrl[splitedUrl.length - 2]}`;
+
             await this.uploadService.deleteFile({
-              key: video_url.split('.amazonaws.com/')[1],
+              key,
             });
             data.video_url = null;
           }
 
-          // req.file이 존재하고 delete_video가 true가 아닐 경우
-          if (req.file && !delete_video) {
+          // req.file이 존재하고 video_exist가 true일 경우
+          if (req.file && video_exist) {
             const upload = await this.uploadService.uploadFile({
-              username: `${splitedEmail[0]}.${splitedEmail[1]}`,
+              username,
               file: req.file,
             });
+
             const new_video_url = upload['url'];
 
             const dataWithVideoUrl = new UpdateLectureDataWithVideUrl({
@@ -963,7 +985,7 @@ export default class CoursesController implements IController {
               video_url: new_video_url,
             });
 
-            if (delete_content) {
+            if (!content_exist) {
               dataWithVideoUrl.content = null;
             }
 
@@ -976,8 +998,12 @@ export default class CoursesController implements IController {
 
             // db 업데이트 성공하고 기존의 비디오가 존재하면 기존의 비디오 삭제
             if (result && video_url) {
+              const splitedUrl = video_url.split('/');
+              const key = `${splitedUrl[splitedUrl.length - 4]}/${
+                splitedUrl[splitedUrl.length - 3]
+              }/${splitedUrl[splitedUrl.length - 2]}`;
               await this.uploadService.deleteFile({
-                key: video_url.split('.amazonaws.com/')[1],
+                key,
               });
             }
 
@@ -1010,8 +1036,13 @@ export default class CoursesController implements IController {
             });
 
           if (video_url) {
+            const splitedUrl = video_url.split('/');
+
+            const key = `${splitedUrl[splitedUrl.length - 4]}/${
+              splitedUrl[splitedUrl.length - 3]
+            }/${splitedUrl[splitedUrl.length - 2]}`;
             await this.uploadService.deleteFile({
-              key: video_url.split('.amazonaws.com/')[1],
+              key,
             });
           }
 

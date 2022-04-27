@@ -36,7 +36,16 @@ export default class UploadService implements IService {
       throw new CustomError('파일 업로드에 실패했습니다.');
     }
 
-    result['url'] = `https://${env.AWS_S3}.s3.${env.AWS_REGION}.amazonaws.com/${file.fieldname}/${username}/${now}`;
+    if (file.fieldname === 'lecture_video') {
+      result[
+        'url'
+      ] = `https://vod.goormedu-clone.com/${file.fieldname}/${username}/${now}/${now}.m3u8`;
+    } else {
+      result[
+        'url'
+      ] = `https://${env.AWS_S3}.s3.${env.AWS_REGION}.amazonaws.com/${file.fieldname}/${username}/${now}`;
+    }
+
     return result;
   }
 
