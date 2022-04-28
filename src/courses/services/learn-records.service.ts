@@ -73,4 +73,5 @@ export default class LearnRecordsService implements IService {
     await this.learnRecordRepository.delete(where);
     return where;
   }
+
 }

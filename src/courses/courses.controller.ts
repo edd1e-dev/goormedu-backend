@@ -537,18 +537,24 @@ export default class CoursesController implements IController {
     this.router.post('/:course_id/learn-record/delete', (req, res) =>
       this.getApi(async () => {
         const user = new JwtPayload(req.user as Express.User);
+        const result = {};
         await validateOrReject(user, { whitelist: true });
 
-        const result = {};
+        const course_id = parseInt(req.params.course_id);
+
+        await this.coursesService.checkCourseOwner({
+          teacher_id: user.id,
+          id: course_id
+        });
 
         Object.assign(result, await this.learnRecordsService.deleteLearnRecords({
           student_id: user.id,
-          course_id: parseInt(req.params.course_id),
+          course_id
         }));
 
         Object.assign(result, await this.completionRecordsService.deleteCompletionRecords({
           student_id: user.id,
-          course_id: parseInt(req.params.course_id),
+          course_id
         }));
 
         return result;

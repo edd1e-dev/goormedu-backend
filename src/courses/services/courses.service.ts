@@ -1,4 +1,5 @@
 import {
+  CheckCourseOwnerDTO,
   DeleteCourseDTO,
   FindAllCoursesDTO,
   FindCourseByIdDTO,
@@ -131,5 +132,15 @@ export default class CoursesService implements IService {
     course.teacher_id = 0;
     await this.courseRepository.save(course);
     return where;
+  }
+
+  async checkCourseOwner({ teacher_id, ...where }: CheckCourseOwnerDTO): Promise<Boolean> {
+    const course = await this.courseRepository.findOne({ where });
+
+    if (teacher_id === course!.teacher_id) {
+      throw new CustomError('본인 코스는 수강취소 할 수 없습니다.');
+    }
+
+    return false;
   }
 }

@@ -184,3 +184,8 @@ export class DeleteCourseDTO {
   id: number;
   teacher_id: number;
 }
+
+export class CheckCourseOwnerDTO {
+  id: number;
+  teacher_id: number;
+}
