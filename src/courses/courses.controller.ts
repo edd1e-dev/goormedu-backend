@@ -233,6 +233,12 @@ export default class CoursesController implements IController {
             teacher_id: user.id,
             data: dataWithCoverImage,
           });
+
+          await this.learnRecordsService.createLearnRecord({
+            student_id: user.id,
+            course_id: result.id,
+          });
+          
           return result;
         }, res),
     );
@@ -444,6 +450,7 @@ export default class CoursesController implements IController {
         return result;
       }, res),
     ); // 해당 강의 이수 완료 요청
+    
     this.router.get('/:course_id/lectures/:lecture_id/detail', (req, res) =>
       this.getApi(async () => {
         const user = new JwtPayload(req.user as Express.User);
@@ -466,6 +473,7 @@ export default class CoursesController implements IController {
         return result;
       }, res),
     ); // 강의 이수를 위한 강의 상세 정보 불러오기,
+
     this.router.post('/:course_id/lectures/:lecture_id/start', (req, res) =>
       this.getApi(async () => {
         const user = new JwtPayload(req.user as Express.User);
@@ -511,6 +519,7 @@ export default class CoursesController implements IController {
         return { ...learnRecord, count_completion_record };
       }, res),
     ); // 수강 기록
+
     this.router.post('/:course_id/learn', (req, res) =>
       this.getApi(async () => {
         const user = new JwtPayload(req.user as Express.User);
