@@ -965,7 +965,7 @@ export default class CoursesController implements IController {
               splitedUrl[splitedUrl.length - 3]
             }/${splitedUrl[splitedUrl.length - 2]}`;
 
-            await this.uploadService.deleteFile({
+            await this.uploadService.deleteVideoFile({
               key,
             });
             data.video_url = null;
@@ -1002,7 +1002,7 @@ export default class CoursesController implements IController {
               const key = `${splitedUrl[splitedUrl.length - 4]}/${
                 splitedUrl[splitedUrl.length - 3]
               }/${splitedUrl[splitedUrl.length - 2]}`;
-              await this.uploadService.deleteFile({
+              await this.uploadService.deleteVideoFile({
                 key,
               });
             }
@@ -1041,7 +1041,7 @@ export default class CoursesController implements IController {
             const key = `${splitedUrl[splitedUrl.length - 4]}/${
               splitedUrl[splitedUrl.length - 3]
             }/${splitedUrl[splitedUrl.length - 2]}`;
-            await this.uploadService.deleteFile({
+            await this.uploadService.deleteVideoFile({
               key,
             });
           }
