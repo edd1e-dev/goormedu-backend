@@ -32,6 +32,11 @@ export enum UserRole {
   Teacher = 'Teacher',
 }
 
+export enum UploadType {
+  Video = 'lecture_video',
+  Image = 'cover_image',
+}
+
 declare global {
   namespace Express {
     interface User extends JwtPayload {}

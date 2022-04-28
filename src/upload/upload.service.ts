@@ -1,4 +1,4 @@
-import { CustomError, IService } from '@/commons/interfaces';
+import { CustomError, IService, UploadType } from '@/commons/interfaces';
 import { DeleteFileDTO, UploadFileDTO } from './upload.dto';
 import {
   DeleteObjectCommandOutput,
@@ -24,7 +24,7 @@ export default class UploadService implements IService {
     file,
   }: UploadFileDTO): Promise<PutObjectCommandOutput> {
     const bucket =
-      file.fieldname === 'lecture_video'
+      file.fieldname === UploadType.Video
         ? env.AWS_S3_VIDEO_BUCKET
         : env.AWS_S3_DATA_BUCKET;
     const now = Date.now();
@@ -40,7 +40,7 @@ export default class UploadService implements IService {
       throw new CustomError('파일 업로드에 실패했습니다.');
     }
 
-    if (file.fieldname === 'lecture_video') {
+    if (file.fieldname === UploadType.Video) {
       result[
         'url'
       ] = `https://vod.goormedu-clone.com/${file.fieldname}/${username}/${now}/${now}.m3u8`;
