@@ -139,7 +139,7 @@ export default class CoursesController implements IController {
         () =>
           this.coursesService.findCoursesByQuery({
             query: req.query.query?.toString() ?? '',
-            select: CoursesController.courseSelect,
+            // select: CoursesController.courseSelect,
           }),
         res,
       ),

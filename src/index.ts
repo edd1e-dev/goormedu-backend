@@ -21,7 +21,7 @@ process.on('SIGINT', () => {
 AppDataSource.initialize()
   .then(() => {
       server = app.listen(env.PORT, () => {
-        (<any> process).send('ready');
+        // (<any> process).send('ready');
         console.log(`✅ Listening on: '${env.DOMAIN}:${env.PORT}`);
       })
       httpTerminator = createHttpTerminator({ server });

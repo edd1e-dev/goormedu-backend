@@ -25,7 +25,7 @@ export default class UploadService implements IService {
   }: UploadFileDTO): Promise<PutObjectCommandOutput> {
     const now = Date.now();
     const result = await this.s3.putObject({
-      Bucket: env.AWS_S3,
+      Bucket: env.AWS_S3_DATA_BUCKET,
       Key: `${file.fieldname}/${username}/${now}`,
       ACL: 'public-read',
       ContentType: file.mimetype,
@@ -43,7 +43,7 @@ export default class UploadService implements IService {
     } else {
       result[
         'url'
-      ] = `https://${env.AWS_S3}.s3.${env.AWS_REGION}.amazonaws.com/${file.fieldname}/${username}/${now}`;
+      ] = `https://${env.AWS_S3_DATA_BUCKET}.s3.${env.AWS_REGION}.amazonaws.com/${file.fieldname}/${username}/${now}`;
     }
 
     return result;
@@ -51,7 +51,7 @@ export default class UploadService implements IService {
 
   async deleteFile({ key }: DeleteFileDTO): Promise<DeleteObjectCommandOutput> {
     const result = await this.s3.deleteObject({
-      Bucket: env.AWS_S3,
+      Bucket: env.AWS_S3_DATA_BUCKET,
       Key: key,
     });
 

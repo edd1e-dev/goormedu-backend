@@ -13,6 +13,7 @@ import { Repository, ILike, In } from 'typeorm';
 import { CustomError, IService } from '@/commons/interfaces';
 import Course from '@/courses/entities/course.entity';
 import AppDataSource from '@/commons/db';
+import { CONSOLE_LEVELS } from '@sentry/utils';
 
 export default class CoursesService implements IService {
   private readonly courseRepository: Repository<Course>;
@@ -32,10 +33,15 @@ export default class CoursesService implements IService {
     query,
     select,
   }: FindCoursesByQueryDTO): Promise<Course[]> {
-    const key = query.trim().replace(/ +/g, ' ');
-    if (key === ' ') return [];
+    const key = query.replace(/\"/gi, "").trim().replace(/ /gi, "%");
+    if (key === '') 
+      return [];
+    console.log(key);
     const result = await this.courseRepository.find({
-      where: { title: ILike(`%${key} #%`) },
+      where: [
+        { title: ILike(`%${key}%`) },
+        { description: ILike(`%${key}%`) }
+      ],
       ...(select && { select }),
     });
     return result;
