@@ -22,10 +22,15 @@ export class CountCompletionRecordDTO {
   course_id: number;
 }
 
-export class DeleteCompletionRecordDTO {
+export class DeleteCompletionRecordByLectureIdDTO {
   lecture_id: number;
 }
 
 export class DeleteCompletionRecordByStudentIdDTO {
   student_id: number;
+}
+
+export class DeleteCompletionRecordsDTO {
+  student_id: number;
+  course_id: number;
 }

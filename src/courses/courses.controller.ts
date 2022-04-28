@@ -534,6 +534,25 @@ export default class CoursesController implements IController {
       }, res),
     );
 
+    this.router.post('/:course_id/learn-record/delete', (req, res) =>
+      this.getApi(async () => {
+        const user = new JwtPayload(req.user as Express.User);
+        await validateOrReject(user, { whitelist: true });
+
+        const result = await this.learnRecordsService.deleteLearnRecords({
+          student_id: user.id,
+          course_id: parseInt(req.params.course_id),
+        });
+
+        await this.completionRecordsService.deleteCompletionRecords({
+          student_id: user.id,
+          course_id: parseInt(req.params.course_id),
+        });
+
+        return result;
+      }, res),
+    );
+
     this.router.use(RoleGuard(UserRole.Teacher));
 
     this.router.get('/:course_id/lectures/temp', (req, res) =>
@@ -1062,7 +1081,7 @@ export default class CoursesController implements IController {
             course_id,
           });
 
-          await this.completionRecordsService.deleteCompletionRecord({
+          await this.completionRecordsService.deleteCompletionRecordByLectureId({
             lecture_id,
           });
 

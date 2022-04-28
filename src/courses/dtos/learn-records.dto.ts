@@ -44,3 +44,8 @@ export class UpdateLearnRecordDTO {
 export class DeleteLearnRecordByStudentIdDTO {
   student_id: number;
 }
+
+export class DeleteLearnRecordsDTO {
+  student_id: number;
+  course_id: number;
+}

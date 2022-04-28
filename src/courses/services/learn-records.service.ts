@@ -10,6 +10,7 @@ import {
   FindCourseIdsByStudentIdDTO,
   CreateLearnRecordDTO,
   UpdateLearnRecordDTO,
+  DeleteLearnRecordsDTO
 } from '@/courses/dtos/learn-records.dto';
 
 export default class LearnRecordsService implements IService {
@@ -66,5 +67,10 @@ export default class LearnRecordsService implements IService {
   }: DeleteLearnRecordByStudentIdDTO): Promise<{ student_id }> {
     await this.learnRecordRepository.delete({ student_id });
     return { student_id };
+  }
+
+  async deleteLearnRecords(where: DeleteLearnRecordsDTO): Promise<DeleteLearnRecordsDTO> {
+    await this.learnRecordRepository.delete(where);
+    return where;
   }
 }
