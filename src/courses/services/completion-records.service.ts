@@ -8,7 +8,7 @@ import {
 } from './../dtos/completion-records.dto';
 import AppDataSource from '@/commons/db';
 import { CustomError, IService } from '@/commons/interfaces';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import CompletionRecord from '../entities/completion-record.entitiy';
 
 export default class CompletionRecordsService implements IService {
@@ -76,9 +76,18 @@ export default class CompletionRecordsService implements IService {
 
   async deleteCompletionRecords(
     where: DeleteCompletionRecordsDTO,
-  ): Promise<DeleteCompletionRecordsDTO> {
-    await this.completionRecordRepository.delete(where);
-    return where;
+  ): Promise<Object> {
+    const findResult = await this.completionRecordRepository.find({ where });
+    const deleteResult = await this.completionRecordRepository.delete(where);
+    let result: Array<Number> = [];
+
+    if (findResult.length === deleteResult.affected) {
+      for (const value of findResult) {
+        result.push(value.lecture_id);
+      }
+    }
+
+    return { lecture_ids: result };
   }
 
   async deleteCompletionRecordByStudentId({
